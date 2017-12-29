@@ -1,0 +1,137 @@
+#Duplication fate project, looking at expression patterns in duplicated genes with cleome as outgroup expression value, well looking at up / downregulation under stresses (determined by edgeR) as character states to reconstruct ancestral up/downregulation state to look for evidence of subfunctionalization. After the genes with differential response to stress have been identified, their conserved non-coding sequences (CNSs) will be examined, hopefully will be able to find enriched kmer which corresponds to stress responsive element to which TFs bind
+
+12-28-17
+Just got back from break, before break / during wrote script (sub_filter.pl) to parse a few files. Had already determined whether certain genes were up / downregulated in response to different stresses. Examined that set of files to create a file where each line lists a single cleome gene name that shows an informative expression change between cleome and two duplicated a. thaliana copies of a gene. Will use this file to extract CNSs for these genes and perform kmer enrichment.
+
+I have comp_cold.txt created output from sub_filter.pl which has tab separated [at edgeR number] [at subgenome copy 1 exp diff value] [at subgenome copy 2 exp diff value] [cleome exp diff value]
+
+I wrote summary_stats.pl to output the informative genes and also print to command line how many were printed, I guess I could combine this with the other script, but they are already separate, and this way incase we want to examine genes without the pattern we were looking for (ONLY 1 at copy sharing state with CV) we got the full list.
+
+Lets fix sub_filter.pl to include a fifth and sixth column with the TAIR10 gene name and cleome ortholog gene name respectively.
+
+
+$ ./sub_filter.pl -p temp.txt -i At-Index.txt -a AtAlpha_Cv_4KT.txt -t edgeR_Arabidopsis_ColdALL_05_OUT_DEG.csv -c edgeR_Cv_ColdALL_05_OUT_DEG.txt -e Cv_Control1-6_GeneID.csv -o comp_cold.txt
+1400 lines were written to comp_cold.txt
+
+33602 lines were read in the at exp file
+
+$ ./summary_stats.pl -i comp_cold.txt -o inf_cold.txt
+1400 genes were analyzed
+361 genes were informative and written to inf_cold.txt
+
+Make files for other treatments:
+
+$ ./sub_filter.pl -p temp.txt -i At-Index.txt -a AtAlpha_Cv_4KT.txt -t edgeR_Arabidopsis_SaltALL_05_OUT_DEG.csv -c edgeR_Cv_SaltALL_05_OUT_DEG.txt -e Cv_Control1-6_GeneID.csv -o comp_salt.txt 
+0 lines were written to comp_salt.txt
+
+0 lines were read in the at exp file
+
+oopsy, got some problems
+I remember now,
+************************IMPORTANT********************************
+The files sent to me were written on pc, so they have DOS carriage returns. Only way I know to fix is to upload file to hpcc, because my terminal doesn't have the dos2unix command. Need to log onto dev node also,
+
+$ ./sub_filter.pl -p temp.txt -i At-Index.txt -a AtAlpha_Cv_4KT.txt -t edgeR_Arabidopsis_SaltALL_05_OUT_DEG.csv -c edgeR_Cv_SaltALL_05_OUT_DEG.txt -e Cv_Control1-6_GeneID.csv -o comp_salt.txt
+0 lines were written to comp_salt.txt
+
+0 lines were read in the at exp file
+
+I think there is some flag I need but I can't remember what it was, use vi instead:
+:1,$s/^M/\r/g
+(enter ^M by pressing ctl+v then enter)
+
+there we go, that did it, only needed to edit the arabidopsis ones, I think the dos2unix without any flags worked on the cv ones
+
+$ ./sub_filter.pl -p temp.txt -i At-Index.txt -a AtAlpha_Cv_4KT.txt -t edgeR_Arabidopsis_SaltALL_05_OUT_DEG.csv -c edgeR_Cv_SaltALL_05_OUT_DEG.txt -e Cv_Control1-6_GeneID.csv -o comp_salt.txt
+1400 lines were written to comp_salt.txt
+
+33602 lines were read in the at exp file
+
+
+aeyocca@Larry /cygdrive/c/Users/aeyocca/Documents/1_MSU/Edger_Rotation_2017/edgeR
+$ ./summary_stats.pl -i comp_salt.txt -o inf_salt.txt
+1400 genes were analyzed
+317 genes were informative and written to inf_salt.txt
+
+
+
+$ ./sub_filter.pl -p temp.txt -i At-Index.txt -a AtAlpha_Cv_4KT.txt -t edgeR_Arabidopsis_MeJaALL_05_OUT_DEG.csv -c edgeR_Cv_MeJaALL_05_OUT_DEG.txt -e Cv_Control1-6_GeneID.csv -o comp_meja.txt
+1400 lines were written to comp_meja.txt
+
+33602 lines were read in the at exp file
+
+
+aeyocca@Larry /cygdrive/c/Users/aeyocca/Documents/1_MSU/Edger_Rotation_2017/edgeR
+$ ./summary_stats.pl -i comp_meja.txt -o inf_meja.txt
+1400 genes were analyzed
+121 genes were informative and written to inf_meja.txt
+
+
+Whats the degree of overlap between these gene sets?
+
+Next I want to look for enriched kmers in CNSs of stress responsive (both up and down reg) genes.
+To do this, I need two bins for kmer enrichment: background bin with non-repsonsive gene CNSs and treatment bin with responsive CNSs.
+Need: script that will look through a set of genes with exp response direction (comp_[stress].txt or inf_[stress].txt files) and output just a list of at geneIDs with 4 different files: 2 non responsive genes one paired with up / down reg. and 2 responsive genes, one up one down. Look at the conditionals in the script, will explain much better than I can with words. 
+Run this script through the 3 stresses, and through both comp / inf files. should end up with 24 files (create separate directory for them)
+
+Then the hard part will be extracting CNSs but we can think about those later.
+
+sub_kmer_en_input.pl
+my $usage = "\n$0 -i <comparison / informative file> -a <at_[stress]_up_[comp/inf].txt> -b <at_[stress]_nonup_[comp/inf].txt> -c <at_[stress]_down_[comp/inf].txt> -d <at_[stress]_nondown_[comp/inf].txt> -w <at_duplication_file> -p <temp.txt> \n\n";
+
+$ ./sub_kmer_en_input.pl -i comp_cold.txt -a at_cold_up_comp.txt -b at_cold_nonup_comp.txt -c at_cold_down_comp.txt -d at_cold_nondown_comp.txt -w AtAlpha_Cv_4KT.txt -p temp.txt
+
+A total of:
+First copy upregulated, second non-resp: 69
+Second copy upregulated, first non-resp: 78
+First copy downregulated, second non-resp: 98
+Second copy downregulated, first non-resp: 115
+
+$ ./sub_kmer_en_input.pl -i inf_cold.txt -a kmer_en/at_cold_up_inf.txt -b kmer_en/at_cold_nonup_inf.txt -c kmer_en/at_cold_down_inf.txt -d kmer_en/at_cold_nondown_inf.txt -w AtAlpha_Cv_4KT.txt -p temp.txt
+
+A total of:
+First copy upregulated, second non-resp: 69
+Second copy upregulated, first non-resp: 77
+First copy downregulated, second non-resp: 98
+Second copy downregulated, first non-resp: 114
+
+Thats pretty interesting, only 2 occurrences of at1/2 one zero, and cv opposite of non-zero value (if that makes sense: only 2 occurrences of 1 0 -1, 0 1 -1, -1 0 1, 0 -1 1) those 4 different possibilities, at random should occur 1400*(4/(3^3)) =~ 207 times
+
+$ ./sub_kmer_en_input.pl -i comp_salt.txt -a kmer_en/at_salt_up_comp.txt -b kmer_en/at_salt_nonup_comp.txt -c kmer_en/at_salt_down_comp.txt -d kmer_en/at_salt_nondown_comp.txt -w AtAlpha_Cv_4KT.txt -p temp.txt
+
+A total of:
+First copy upregulated, second non-resp: 73
+Second copy upregulated, first non-resp: 76
+First copy downregulated, second non-resp: 75
+Second copy downregulated, first non-resp: 99
+
+
+aeyocca@Larry /cygdrive/c/Users/aeyocca/Documents/1_MSU/Edger_Rotation_2017/edgeR
+$ ./sub_kmer_en_input.pl -i inf_salt.txt -a kmer_en/at_salt_up_inf.txt -b kmer_en/at_salt_nonup_inf.txt -c kmer_en/at_salt_down_inf.txt -d kmer_en/at_salt_nondown_inf.txt -w AtAlpha_Cv_4KT.txt -p temp.txt
+
+A total of:
+First copy upregulated, second non-resp: 73
+Second copy upregulated, first non-resp: 75
+First copy downregulated, second non-resp: 73
+Second copy downregulated, first non-resp: 96
+
+$ ./sub_kmer_en_input.pl -i comp_meja.txt -a kmer_en/at_meja_up_comp.txt -b kmer_en/at_meja_nonup_comp.txt -c kmer_en/at_meja_down_comp.txt -d kmer_en/at_meja_nondown_comp.txt -w AtAlpha_Cv_4KT.txt -p temp.txt
+
+A total of:
+First copy upregulated, second non-resp: 22
+Second copy upregulated, first non-resp: 31
+First copy downregulated, second non-resp: 26
+Second copy downregulated, first non-resp: 41
+
+$ ./sub_kmer_en_input.pl -i inf_meja.txt -a kmer_en/at_meja_up_inf.txt -b kmer_en/at_meja_nonup_inf.txt -c kmer_en/at_meja_down_inf.txt -d kmer_en/at_meja_nondown_inf.txt -w AtAlpha_Cv_4KT.txt -p temp.txt
+
+A total of:
+First copy upregulated, second non-resp: 22
+Second copy upregulated, first non-resp: 31
+First copy downregulated, second non-resp: 26
+Second copy downregulated, first non-resp: 41
+
+
+
+Now we need to go from list of gene IDs to one file with just a string of CNSs
+
