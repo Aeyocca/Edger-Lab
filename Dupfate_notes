@@ -135,3 +135,82 @@ Second copy downregulated, first non-resp: 41
 
 Now we need to go from list of gene IDs to one file with just a string of CNSs
 
+12-29-17:
+
+get the CNSs for the gene lists using make_kmer_files.pl
+
+aeyocca@Larry /cygdrive/c/Users/aeyocca/Documents/1_MSU/Edger_Rotation_2017/edge                                                                                                                R
+$ ./make_kmer_files.pl -i kmer_en/at_cold_up_comp.txt -o kmer_en/cns_sorted/at_cold_up_comp_cns.fa -c CNS_Brassicaceae_65K_4Alan.txt -p tempo.txt                                               
+Number of CNSs written to output: 708
+
+aeyocca@Larry /cygdrive/c/Users/aeyocca/Documents/1_MSU/Edger_Rotation_2017/edgeR
+$ ./make_kmer_files.pl -i kmer_en/at_cold_nonup_comp.txt -o kmer_en/cns_sorted/at_cold_nonup_comp_cns.fa -c CNS_Brassicaceae_65K_4Alan.txt -p tempo.txt
+
+Number of CNSs written to output: 492
+
+aeyocca@Larry /cygdrive/c/Users/aeyocca/Documents/1_MSU/Edger_Rotation_2017/edgeR
+$ ./make_kmer_files.pl -i kmer_en/at_cold_down_comp.txt -o kmer_en/cns_sorted/at_cold_down_comp_cns.fa -c CNS_Brassicaceae_65K_4Alan.txt -p tempo.txt
+
+Number of CNSs written to output: 695
+
+aeyocca@Larry /cygdrive/c/Users/aeyocca/Documents/1_MSU/Edger_Rotation_2017/edgeR
+$ ./make_kmer_files.pl -i kmer_en/at_cold_nondown_comp.txt -o kmer_en/cns_sorted/at_cold_nondown_comp_cns.fa -c CNS_Brassicaceae_65K_4Alan.txt -p tempo.txt
+
+Number of CNSs written to output: 786
+
+
+Make table:
+Stress	comp/inf	direction	Number written to output
+cold	  comp    	up	      708
+cold	  comp	    nonup	    492
+cold  	comp	    down	    695
+cold	  comp	    nondown	  786
+cold	  inf	      up	      707
+cold	  inf	      nonup	    487
+cold	  inf	      down	    673
+cold	  inf	      nondown	  769
+salt	  comp	    up	      714
+salt	  comp	    nonup	    514
+salt	  comp	    down	    614
+salt	  comp	    nondown	  552
+salt	  inf	      up	      713
+salt	  inf	      nonup	    509
+salt	  inf	      down	    604
+salt	  inf     	nondown	  532
+meja	  comp	    up	      207
+meja	  comp    	nonup	    198
+meja	  comp	    down	    247
+meja	  comp	    nondown	  221
+meja	  inf	      up	      207
+meja	  inf	      nonup	    198
+meja	  inf     	down	    247
+meja	  inf	      nondown  	221
+
+
+Alriighty, lets hope jellyfish will read these correctly, looks like it does, write different scripts for 5,6,7mer to iterate through all files:
+
+[yoccaala@dev-intel14 cns_sorted]$ qsub -t 1-24 -v INFILE=cns_files.txt jellyfish_5.sh
+50809721[].mgr-04.i
+50809916[].mgr-04.i
+
+[yoccaala@dev-intel14 cns_sorted]$ qsub -t 1-24 -v INFILE=cns_files.txt jellyfish_6.sh
+50809948[].mgr-04.i
+[yoccaala@dev-intel14 cns_sorted]$ qsub -t 1-24 -v INFILE=cns_files.txt jellyfish_7.sh
+50809949[].mgr-04.i
+
+[yoccaala@dev-intel14 cns_sorted]$ qsub -t 1-24 -v INFILE=cns_files.txt jellyfish_6.sh
+50810478[].mgr-04.i
+[yoccaala@dev-intel14 cns_sorted]$ qsub -t 1-24 -v INFILE=cns_files.txt jellyfish_7.sh
+50810479[].mgr-04.i
+
+
+[yoccaala@dev-intel14 cns_sorted]$ qsub jellyfish_all_7.sh
+50810495.mgr-04.i
+
+
+make scatterplot data frames: make_scat_df.pl
+
+[yoccaala@dev-intel14 jellyfish]$ qsub -t 1-18 -v INFILE=up_dump_files.txt make_scat_df_up.sh  50811560[].mgr-04.i
+[yoccaala@dev-intel14 jellyfish]$ qsub -t 1-18 -v INFILE=down_dump_files.txt make_scat_df_down.sh
+50811563[].mgr-04.i
+
