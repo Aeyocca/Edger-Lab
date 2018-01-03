@@ -280,4 +280,10 @@ jellyfish dump jellyfish/${NAME}binary_5.jf_0 > jellyfish/${NAME}.fa
 
 [yoccaala@dev-intel14 kmer_en]$ qsub perm_kmer_con.sh
 50961520.mgr-04.i
+50964048.mgr-04.i
+50964820.mgr-04.i
+50965016.mgr-04.i
+50965414.mgr-04.i
+50965580.mgr-04.i
+50966987.mgr-04.i
 
