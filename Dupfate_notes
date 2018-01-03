@@ -214,3 +214,70 @@ make scatterplot data frames: make_scat_df.pl
 [yoccaala@dev-intel14 jellyfish]$ qsub -t 1-18 -v INFILE=down_dump_files.txt make_scat_df_down.sh
 50811563[].mgr-04.i
 
+
+1-2-18
+the scat_dfs looked messed up for some since the jellyfish qsub files weren't exactly correct. Fixed those and restarted from jellyfish step:
+
+[yoccaala@dev-intel14 cns_sorted]$ wc -l cns_files.txt
+24 cns_files.txt
+[yoccaala@dev-intel14 cns_sorted]$ qsub -t 1-24 -v INFILE=cns_files.txt jellyfish_5.sh
+50937959[].mgr-04.i
+[yoccaala@dev-intel14 cns_sorted]$ qsub -t 1-24 -v INFILE=cns_files.txt jellyfish_6.sh
+50937970[].mgr-04.i
+[yoccaala@dev-intel14 cns_sorted]$ qsub -t 1-24 -v INFILE=cns_files.txt jellyfish_7.sh
+50937982[].mgr-04.i
+
+
+[yoccaala@dev-intel14 jellyfish]$ qsub -t 1-18 -v INFILE=up_dump_files.txt make_scat_df_up.sh
+50938481[].mgr-04.i
+[yoccaala@dev-intel14 jellyfish]$ qsub -t 1-18 -v INFILE=down_dump_files.txt make_scat_df_down.sh
+50938483[].mgr-04.i
+
+
+make a script to make scatterplot dataframes comparing the percentage frequency of kmer in stress vs. overall kmer frequency. So need to run jellyfish on base cns file
+
+jellyfish count -m 5 -s 100M -t 1 -o jellyfish/${NAME}binary_5.jf ${LINE}
+
+jellyfish dump jellyfish/${NAME}binary_5.jf_0 > jellyfish/${NAME}dump_5.fa
+my $usage = "\n$0 -i <jellyfish_dump.fa> -z <zero_exp_change_jellyfish_dump.fa> -o <at_[stress]_[up/down]_[comp/inf]_df.txt> -p <temp1.txt> -q <temp2.txt> \n\n";
+
+[yoccaala@dev-intel14 jellyfish]$ qsub -t 1-12 -v INFILE=all_7_dump_files.txt make_scat_df_all_7.sh
+50940545[].mgr-04.i
+[yoccaala@dev-intel14 jellyfish]$ qsub -t 1-12 -v INFILE=all_6_dump_files.txt make_scat_df_all_6.sh
+50940546[].mgr-04.i
+[yoccaala@dev-intel14 jellyfish]$ qsub -t 1-12 -v INFILE=all_5_dump_files.txt make_scat_df_all_5.sh
+50940548[].mgr-04.i
+
+checked out all the scatter plots, not too much interesting. getting some signal from meja files, could be that they are messed up though... we shall see
+
+at_salt_down_inf_dump_5.fa
+at_meja_up_comp_dump_5.fa
+
+at_meja_down_comp_dump_7_df.txt
+TAAAGTA 7       0
+AAACATT 7       1
+AGACAAA 7       1
+
+
+[yoccaala@dev-intel14 Permutations]$ qsub -t 1-1000 -v INFILE=perm_file_list.txt jellyfish_5.sh
+50950625[].mgr-04.i
+
+
+module load jellyfish
+
+LINE=`/bin/sed -n ${PBS_ARRAYID}p ${INFILE}`
+
+NAME=$(echo ${LINE} | sed 's/\.txt//')
+
+jellyfish count -m 5 -s 100M -t 1 -o jellyfish/${NAME}binary_5.jf ${LINE}
+
+jellyfish dump jellyfish/${NAME}binary_5.jf_0 > jellyfish/${NAME}.fa
+
+
+[yoccaala@dev-intel14 Permutations]$ qsub -t 1-1000 -v INFILE=perm_file_list.txt jellyfish_5.sh
+50950867[].mgr-04.i
+
+
+[yoccaala@dev-intel14 kmer_en]$ qsub perm_kmer_con.sh
+50961520.mgr-04.i
+
