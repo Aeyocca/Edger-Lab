@@ -74,6 +74,9 @@ To do this, I need two bins for kmer enrichment: background bin with non-repsons
 Need: script that will look through a set of genes with exp response direction (comp_[stress].txt or inf_[stress].txt files) and output just a list of at geneIDs with 4 different files: 2 non responsive genes one paired with up / down reg. and 2 responsive genes, one up one down. Look at the conditionals in the script, will explain much better than I can with words. 
 Run this script through the 3 stresses, and through both comp / inf files. should end up with 24 files (create separate directory for them)
 
+*********NONUPs are genes with NO CHANGE in treatment, whose PARALOG is UP regulated in the treatment*************************
+
+
 Then the hard part will be extracting CNSs but we can think about those later.
 
 sub_kmer_en_input.pl
@@ -324,6 +327,35 @@ This one is for the treatment files:
 
 
 Going to do an all v all blast search of enriched kmer files against database of known motifs and see what happens
+>Athb-1 is listed twice, once with a sequence, and once without, so just removed the empty one in the hpcc copy, otherwise, fails to build db
 
 
+$ module load BLAST/2.2.26
+[yoccaala@dev-intel14 blast_run]$ dos2unix MotifsPlantPanCH2_Database.txt
+dos2unix: converting file MotifsPlantPanCH2_Database.txt to UNIX format ...
+[yoccaala@dev-intel14 blast_run]$ formatdb -i MotifsPlantPanCH2_Database.txt -p F -o T -n Motifs_db
+
+EXAMPLE FROM qsub_blastall_ZMB73_TIGR.sh:
+cd /mnt/home/yoccaala/01_VanBuren/mcscan/MCScanX/data
+module load BLAST
+blastall -p blastp -d "ZmB73_db Osativa_db_TIGR Bdistachyon_192_db Sbicolor_79_db" -i ZmB73_peptide.fa -e 1e-5 -b 5 -v 5 -m 8 -o ZmB73.blast3
+
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-24 -v INFILE=file_list.txt sig_to_fa.sh
+51078670[].mgr-04.i
+51078723[].mgr-04.i
+51078741[].mgr-04.i
+51080427[].mgr-04.i
+51086324[].mgr-04.i
+
+$ blastall -p blastn -d "MotifsPlantPanCH2_Database.txt" -i treat_sig_fa/at_cold_down_inf_dump_5_sig.fa -e 1e-5 -b 5 -v 5 -m 8 -o blast_output/at_cold_down_inf_dump_5.blast
+
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-24 -v INFILE=sig_file_list.txt blast_sig_treat_to_motif.sh
+51082262[].mgr-04.i
+
+since query is so short (5 nt since doing 5mers at the moment), need to add -W flag which sets word length. not entirely sure what that means but the default is 11 and since our query is 5, its finding zero hits, found some post recommending setting this to half the query length, but the minimum is 4, so we are sticking with that
+
+lowest E value obtained seems to be 5.1, probably lowest posible with 5 nt query. Lets start creating the 7mer permutation files then while trying to parse through this blast output
+
+[yoccaala@dev-intel14 Permutations]$ qsub -t 1-1000 -v INFILE=perm_file_list.txt jellyfish_7.sh
+51086556[].mgr-04.i
 
