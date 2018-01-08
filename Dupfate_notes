@@ -304,3 +304,22 @@ jellyfish dump jellyfish/${NAME}binary_5.jf_0 > jellyfish/${NAME}.fa
 50986540.mgr-04.i
 50987822.mgr-04.i
 50987926.mgr-04.i
+
+1-7-18
+
+[yoccaala@dev-intel14 jellyfish]$ qsub -t 1-1000 -v INFILE=fa_file_list.txt fa_to_one_liner.sh
+51058722[].mgr-04.i
+51059305[].mgr-04.i
+51065779[].mgr-04.i
+
+convert all to one liner, load into r to compile into one file, convert all the treatments to one line, use one line treatments and combined file in R to get file for each treatment with kmer tab count tab significance. BEFORE THAT********** edit the significance calculation to include percentage rather than raw count (convert all raw counts to percentages, add that as another column in the significance output)
+
+This one is for the treatment files:
+[yoccaala@dev-intel14 jellyfish]$ qsub -t 1-72 -v INFILE=fa_file_list.txt fa_to_one_liner.sh
+51058897[].mgr-04.i
+51059008[].mgr-04.i
+51059585[].mgr-04.i
+51065522[].mgr-04.i
+
+
+
