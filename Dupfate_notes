@@ -367,3 +367,16 @@ aa
 51161339[].mgr-04.i
 
 make histogram of significance values. whats best way to remove NAs? grep not matching, yea
+
+- make sub genome exp into table
+- Think about tracking CNS changes, whats informative?
+- What does this putative function list tell me?
+	- What sort of comparisons should I be making across all 8 files within stress / over/underrepresentation. 
+	-What are the expected functions of kmers overrep in non-responsive genes (since there are so few compared to the changed exp ones **********MAKE A TABLE********* perhaps they are just showing up there because they do show a change, but edgeR filters are too stringent, interesting to directly compare FPKM of genes in that category, might be too cyclical as far as tracking those genes down, might just be easier to lower constraints and rerun edgeR, that would be good because I would learn how to use it too, look that up later
+
+PUTATIVE FUNCTION, COULD B DIFF FUNCS SHARE 7 BP CONSENSUS BC GOOD FOR TF BINDING
+
+
+reading the Shui paper again, Those that don't respond anymore have lost the cis elements, genes that lost response to one stress, gained response to another. Rates of expression response changes decrease over evolutionary time. The proportion of nonfunctionalization of copies increases over evolutionary time. 
+
+
