@@ -358,4 +358,5 @@ lowest E value obtained seems to be 5.1, probably lowest posible with 5 nt query
 
 [yoccaala@dev-intel14 Permutations]$ qsub -t 1-1000 -v INFILE=perm_file_list.txt jellyfish_7.sh
 51086556[].mgr-04.i
+aa
 
