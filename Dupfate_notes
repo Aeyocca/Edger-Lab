@@ -360,3 +360,10 @@ lowest E value obtained seems to be 5.1, probably lowest posible with 5 nt query
 51086556[].mgr-04.i
 aa
 
+1-11-18
+
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-24 -v INFILE=file_lists/cut_file_list.txt cut_sig.sh
+51161149[].mgr-04.i
+51161339[].mgr-04.i
+
+make histogram of significance values. whats best way to remove NAs? grep not matching, yea
