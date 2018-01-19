@@ -385,3 +385,9 @@ reading the Shui paper again, Those that don't respond anymore have lost the cis
 - sub-neofunctionalization, neofunct usually occurs on duplicate that did not inherit the ancestral response, but duh kind of right? has to lose original function most likely first, if accumulating mutations randomly, going to do bad before you do good? IT CANT BE A RANDOM PROCESS, I ALMOST REFUSE TO BELIEVE IT, MAYBE I NEED TO RETHINK THE NUMBERS BUT NO WAY RANDOM MUTATIONS RESPONSIBLE FOR EVERYTHING WE SEE TODAY, MAYBE THE NUMBERS ARE SMALLER THAN I THINK BUT DAMN, CANT BE COMPLETELY RANDOM. Big innovations have to be non-random, right?
 
 
+*****THINK OF how to find out if those that lost response to one stress, gained response to another************
+- What other informative comparisons could I make? Only compared the up regulated to nonup, and down regulated to nondown
+- find a way to quickly access the gene lists, ie, list of genes that are upregulated / downregulated... Actually should have that file somewhere, right? If not should be straight forward to pull from edgeR output
+- look at genes with most interesting motif hits, see if their exp difference is >> than those with seemingly background ubiquitous motifs
+
+
