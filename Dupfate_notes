@@ -390,4 +390,18 @@ reading the Shui paper again, Those that don't respond anymore have lost the cis
 - find a way to quickly access the gene lists, ie, list of genes that are upregulated / downregulated... Actually should have that file somewhere, right? If not should be straight forward to pull from edgeR output
 - look at genes with most interesting motif hits, see if their exp difference is >> than those with seemingly background ubiquitous motifs
 
+1-19-18:
 
+- create list of kmers that are over represented that do not have a blast hit:
+	- grep for "Query: 1" will give the 7mer alignment, cut field 3 based on space delimiter, need to uniq within that file
+	- put into file that has blast_7mer
+	- check if there is a unix way to get unique between that and the significance file, if not write perl script
+	
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-48 -v INFILE=file_lists/blast_file_list.txt ext_kmer_from_blast.sh
+51419109[].mgr-04.i
+
+	- this should put _blast_7mer.txt files into blast_run/sig_7/kmer_blast_hit/ directory containing files that have "Query: 1 kmer" for all kmer hits in blast
+	- upon first look at at_cold_down_comp seem have 80 significant over rep kmers getting a blast hit to the motif db out of 890 total significantly over rep kmers. Perhaps I should rerun blast allowing up to two mismatches, that will be interesting to see what our list of "novel" kmers goes down to. 
+	- side note, there are about 16k possible kmers and we get 890 ( ~5%) significant, while that seems random, we get ~5% total kmers significant but a much higher % of the kmers present only in that treatment. Still something thats going to bother me. Here is a bright side, if the stress was a random sample, then you would expect only 5% of sample to be significant, or about 2.5% of the total possible kmers (since ~ 9k kmers in each treatment), check to make sure when made sig files that it has all kmers in the treatment files, well really what about the NAs I have in my sig files, where did those come from?
+	
+	next step is add cut to above script to get only the kmer
