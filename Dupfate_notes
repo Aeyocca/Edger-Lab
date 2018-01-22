@@ -405,3 +405,54 @@ reading the Shui paper again, Those that don't respond anymore have lost the cis
 	- side note, there are about 16k possible kmers and we get 890 ( ~5%) significant, while that seems random, we get ~5% total kmers significant but a much higher % of the kmers present only in that treatment. Still something thats going to bother me. Here is a bright side, if the stress was a random sample, then you would expect only 5% of sample to be significant, or about 2.5% of the total possible kmers (since ~ 9k kmers in each treatment), check to make sure when made sig files that it has all kmers in the treatment files, well really what about the NAs I have in my sig files, where did those come from?
 	
 	next step is add cut to above script to get only the kmer
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-48 -v INFILE=file_lists/blast_file_list.txt ext_kmer_from_blast.sh
+51469932[].mgr-04.i
+
+fixed that script to extract kmer substring, will be in all lowercase letters.. see if I can change that.. also should be able to deal with non-exact matches in the kmer. currerntly blast run made 100% match but later if I want non exact (i just have it taking the hyphens out)
+
+51470917[].mgr-04.i
+
+looks like its excluding some lines, debugging
+
+51471466[].mgr-04.i
+51472056[].mgr-04.i
+
+awk -F " " '{print $3}' at_cold_down_comp_dump_7_sig_over_blast_7mer.txt | cat > temp.txt
+
+use awk instead of cut
+
+51472092[].mgr-04.i
+51474061[].mgr-04.i
+
+
+made put_7mers.pl now need to integrate that into bash shell for ext kmers from blast for a one step process
+
+ at_cold_down_comp_dump_7_sig_over.blast
+ at_cold_down_comp_dump_7_sig_over.fa
+
+qsub -t 1-48 -v INFILE=file_lists/blast_file_list.txt ext_kmer_from_blast.sh
+51488148[].mgr-04.i
+51488158[].mgr-04.i
+51490336[].mgr-04.i
+51490514[].mgr-04.i
+51491097[].mgr-04.i
+51492287[].mgr-04.i
+
+currently searching for DHS dataset under stress conditions... not finding it, you hate to see that
+There are DHS data sets for development, dark treated, heat shocked as of 2015, haven't found any more recent than that
+
+There is a paper that called motifs based on DHS sites and found ~70% of those in microarray data, check how they found that because there are definitely stress microarray data floating around "motif models derived from protein binding microarrays" ahhh that was the specific wording, check what thats all about.
+
+http://cisbp.ccbr.utoronto.ca/ eukaryotic dna binding domain motif identification
+
+After that, look for yeast 2 hybrids
+
+***********************
+for the high-throughput yeast 1H systems, prey plasmids will be easy since ~2k TFs in athal, so only 2k preys, but need to bait whole genome, do they just randomly insert and screen? actually sounds right, but how long of a bait sequence do you need to accurately map it back to the genome, actually, shouldn't 150 / 200 bp be enough?
+**************************
+
+
+
+
+
+
