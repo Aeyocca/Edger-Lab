@@ -450,9 +450,55 @@ After that, look for yeast 2 hybrids
 ***********************
 for the high-throughput yeast 1H systems, prey plasmids will be easy since ~2k TFs in athal, so only 2k preys, but need to bait whole genome, do they just randomly insert and screen? actually sounds right, but how long of a bait sequence do you need to accurately map it back to the genome, actually, shouldn't 150 / 200 bp be enough?
 **************************
+- Michelle Tang
+
+The sig files did not contain every significant kmer. Additionally, I have been ignoring NAs in the significance files which truely mean they are not represented in the treatment genes. These need to be considered zeros, so need to replace NA with zeros... something I could have done in R so if I run this process again separately I will need to change that since now I am jus going to write it into the perl scripts. Write my pipeline before I do any of this: actually, would be best to just replace NAs with zero, shouldn't be too difficult, yea also,,, yea just recreate the sig files again
+
+- looked at it again, I am missing a kmer in my permutations file (16383 / 16384)
+- Also, at least 1 permutation does not represent a kmer in ALL except 430 kmers. Therefore, when treatment count is zero, ecdf can = 0.5 if half of all permutations do not have that kmer..... maybe I need to step up the number of permutations... was taking 2k CNSs a good proxy? How can I get a summary table of the number of bp extracted from stress responsive / nonresponsive genes?
+
+- checked, depending on the stress, have about 200, 400, or 700 CNSs for each treatment, took 1000 for permutations, shouldn't matter should it? decreases my confidence in meja kmers since they are smaller sample size (but then shouldn't we get more significant kmers? Ah well
+~26k nt in at_cold_down_comp_cns.fa
+~40k nt in perm files
+
+-Im tempted to look for any zeros with significant ecdf and print that line to see what the permutation distribution is. shouldn't be too many lines to sift through.. sure why not??
+- yea for some we are getting significance at 0 kmer counts since they are also not showing up in permutations. that I believe is because the CNSs are depleted for these kmers. Intuitively though, I should exclude these kmers. Whats a good rule? If kmer is not represented in >= 90% of permutations, exclude from further analysis? Do these kmers overlap?
+3:
+
+4:
+
+5:
+
+
+keep for now, ask later
+
+**********scat plot between up and nonup with NA stuff**********************
+
+	- create directory in kmer_en on hpcc backing up everything incase something goes wrong
+	- R code to create _sig.txt file with five columns: kmer	treat_count	perm_min	perm_max	ecdf (sig)
+	- upload to 04_Edger/kmer_en/blast_run/sig_7
+	- dos2unix everything
+	- create _over and _under files:
+		- had previously cut out the lines with NA with cut_sig.sh using unix
+		- Then had parsed it with sig_to_fa.sh / sig_to_fa.pl
+			- This time, skip the cut part, edit the perl script, just take out the NA search since all NA should be zeros
+	- Then blast it
+		- need to think about making those up to non-up comparisons, see if they end up being the same
+	- Parse blast with ext_kmer_from_blast.sh which uses put_7mers.txt
+		- not sure if any information with be gained from the under rep ones but good to have anyway.
+Plan:
+$[yoccaala:sig_7] dos2unix *
+
+$[blast_run] qsub -t 1-24 -v INFILE=sig_file_list.txt sig_to_fa.sh
+
+$[blast_run] qsub -t 1-48 -v INFILE=fa_file_list.txt blast_sig_treat_to_motif.sh
+
+$[blast_run] qsub -t 1-48 -v INFILE=blast_file_list.txt ext_kmer_from_blast.sh
 
 
 
-
-
-
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-24 -v INFILE=file_lists/sig_file_list.txt sig_to_fa.sh
+51519039[].mgr-04.i
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-24 -v INFILE=file_lists/cut_file_list.txt sig_to_fa.sh
+51519169[].mgr-04.i
+51519205[].mgr-04.i
