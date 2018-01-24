@@ -502,3 +502,198 @@ $[blast_run] qsub -t 1-48 -v INFILE=blast_file_list.txt ext_kmer_from_blast.sh
 [yoccaala@dev-intel14 blast_run]$ qsub -t 1-24 -v INFILE=file_lists/cut_file_list.txt sig_to_fa.sh
 51519169[].mgr-04.i
 51519205[].mgr-04.i
+
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-48 -v INFILE=file_lists/fa_file_list_over_under.txt blast_sig_treat_to_motif.sh
+51519308[].mgr-04.i
+
+[yoccaala@dev-intel16-k80 blast_run]$ qsub -t 1-48 -v INFILE=file_lists/blast_file_list.txt ext_kmer_from_blast.sh
+51519887[].mgr-04.i
+
+can also get unique putative 7mers by taking out those that are also enriched in paralogs
+Next step:
+	- run uniq motifs
+	- run uniq motif script to get unique putative 7mers
+
+[yoccaala@dev-intel16-k80 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/put_7mer_file_list_up.txt uniq_put_7mer_up.sh
+51520144[].mgr-04.i
+[yoccaala@dev-intel16-k80 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/put_7mer_file_list_down.txt uniq_put_7mer_down.sh
+51520161[].mgr-04.i
+
+[yoccaala@dev-intel16-k80 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/motif_file_list_up.txt uniq_motif_up.sh
+51520194[].mgr-04.i
+[yoccaala@dev-intel16-k80 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/motif_file_list_down.txt uniq_motif_down.sh
+51520196[].mgr-04.i
+
+had moved the blast db to another directory after running the last time so restart from that point:
+[yoccaala@dev-intel16-k80 blast_run]$ qsub -t 1-48 -v INFILE=file_lists/fa_file_list_over_under.txt blast_sig_treat_to_motif.sh
+51520741[].mgr-04.i
+
+for some reason the sequence CCCCCCC and TTTTTTT is throwing out a warning, invalid query sequence??? Idk, shouldn't matter
+
+[yoccaala@dev-intel16-k80 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/put_7mer_file_list_up.txt uniq_put_7mer_up.sh
+51522140[].mgr-04.i
+[yoccaala@dev-intel16-k80 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/put_7mer_file_list_down.txt uniq_put_7mer_down.sh
+51522156[].mgr-04.i
+[yoccaala@dev-intel16-k80 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/motif_file_list_up.txt uniq_motif_up.sh
+51522157[].mgr-04.i
+[yoccaala@dev-intel16-k80 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/motif_file_list_down.txt uniq_motif_down.sh
+51522158[].mgr-04.i
+
+
+ooopsie, these should hhave been before the uniq commands:
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-48 -v INFILE=file_lists/blast_file_list.txt ext_mot_from_blast.sh
+51523041[].mgr-04.i
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-48 -v INFIL=file_lists/blast_file_list.txt ext_kmer_from_blast.sh
+51523052[].mgr-04.i
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/motif_file_list_up.txt uniq_motif_up.sh
+51523562[].mgr-04.i
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/motif_file_list_down.txt uniq_motif_down.sh
+51523568[].mgr-04.i
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/put_7mer_file_list_up.txt uniq_put_7mer_up.sh
+51523569[].mgr-04.i
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/put_7mer_file_list_down.txt uniq_put_7mer_down.sh
+51523570[].mgr-04.i
+
+
+ugh
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-48 -v INFILE=file_lists/blast_file_list.txt ext_kmer_from_blast.sh
+51523588[].mgr-04.i
+51523596[].mgr-04.i
+51523611[].mgr-04.i
+
+We are getting over 1k significantly overrep kmers. We expect 820 if its random. We only get about 100 blast hits to the db. Comparing between up / nonup will help narrow down I believe, we shall see
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/put_7mer_file_list_up.txt uniq_put_7mer_up.sh
+51523844[].mgr-04.i
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists/put_7mer_file_list_down.txt uniq_put_7mer_down.sh
+51523845[].mgr-04.i
+
+
+Whats the expected kmer overlap between up and nonup if it was completely random? 1st sample ~ 1,500 / ~16,000. Two samples should overlap on average by that amount, right? That sounds right. Therefore,, I hope we get significantly different from that expectation
+
+**********after incorporating the NAs as 0s, nearly doubles those significantly enriched. This tells me a significant number of genes having significant ecdf with 0 counts. NEED TO FIX THIS!!!!!!!!!!! but how? in perl script when creating fa files sounds like the best place to do it
+
+That number doubled, but only 38 were from zeros
+
+Ahhh, was trying to wrap my head around why such a big increase, and it was because in the first pass, I was only going through about half the rows of the whole dataframe, now I am confident we have them all. Damn its messy, need way to increase confidence in putative kmers.... maybe the scatter plots will show some cool ones
+
+1-24-18
+
+Lets do some scatterplots, just go from scratch here. What do we want to compare? Find a kmer that is highly represented in up that is not represented in nonup?????????????
+
+what are the significance values of my kmers with blast hits?? That probably doesn't matter
+
+What does the histogram of significance values look like zoomed in on the over rep ones? Can't think of a super high throughput way to do it locally so for now look within up/down and within nonup/nondown
+
+I zoomed in on the histograms of sig values. They don't seem to really peak until after 0.99, so lets pull those out and blast them and compare some results. I will have higher confidence in both the putative 7mers and motif hits
+
+create new directories:
+	- sig_fa_7/99/ 
+	- blast_output/99/ 
+	- sig_7/99/kmer_blast_hit 
+	- sig_7/99/put_7mer/
+	- motifs/99/
+	- motifs/99/uniq
+	- sig_7/99/put_7mer/uniq
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-24 -v INFILE=file_lists_99/sig_file_list.txt scripts_99/sig_to_fa_99.sh
+51538661[].mgr-04.i
+51538746[].mgr-04.i
+51538917[].mgr-04.i
+
+The alpha dup file, sig_7/at_cold_nonup_comp_dump_5_sig.fa, does not exist.
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-24 -v INFILE=file_lists_99/file_list_7.txt scripts_99/sig_to_fa_99.sh
+51539095[].mgr-04.i
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_99/fa_file_list_99.txt scripts_99/blast_sig_treat_to_motif_99.sh
+51539377[].mgr-04.i
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_99/blast_file_list_99.txt scripts_99/ext_kmer_from_blast_99.sh
+51539645[].mgr-04.i
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_99/blast_file_list_99.txt scripts_99/ext_mot_from_blast_99.sh
+51539702[].mgr-04.i
+
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/motif_file_list_up_99.txt scripts_99/uniq_motif_up_99.sh
+51539941[].mgr-04.i
+51539946[].mgr-04.i
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/motif_file_list_down_99.txt scripts_99/uniq_motif_down_99.sh
+51539943[].mgr-04.i
+51539947[].mgr-04.i
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_up_99.txt scripts_99/uniq_put_7mer_up_99.sh
+51539944[].mgr-04.i
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_down_99.txt scripts_99/uniq_put_7mer_down_99.sh
+51539945[].mgr-04.i
+
+
+Need to think of a nice way to present the information / should download the summary tables so they can all be open at the same time for sure. Do that first, get histograms ready first. Need to think about scatter plots stuff. Is there anything that I should read like right now? I read about 3 papers per week just dallying around. class not really that stressfull (except maybe tonight) so I have time for all this stuff.
+
+
+
+Summary tables did not have all 24 files in them. I think it was a problem with the multithreading not able to open and write simultaneously. Think can sove it by having perl script save to uniq temp file and use cat to append to bigger file
+
+How to align them easily?? What do I want final product to look like?
+
+0.95	0.99
+#change	#change
+#non	#non
+
+I think the best way will be to make a tab separated file where you get file name with base info: stress,edgeR,comp/inf,over/under,motif/put7mer,99/95
+
+These are going to be some very specific loops might not be very useful later. Meeting is soon so just manually curate a few for comparison then create final table later. good to ask now though: what do we want the table to tell us? How much info changed moving from 0.95 to 0.99, how many putative 7mers / blast motif hits do we have
+
+
+
+Hardly any motif # change!!!! (this comment coming much later. there is still little change, but i was excited about getting exact #s, however i did not change underrep threshold so all underrep were showing same exact #s) So our kmers that blasted to motifs were almost exclusively in this >0.99 bin which is great!!!!
+Seems like very large amount of putative 7mers still..... that will be tough to tease out. Lets see how many 7mers we were blasting in the >0.99 set
+
+- Y1H data to see if put 7mers have protein binding evidence
+
+copy number of kmer called (redo scatter plots to be sure and so you have them)
+
+- Type up overview to stare at
+- expect clustering. superimpose on gene coexp network
+- rank confidence in shift between them. look for most extreme differences. think about how they compare the permutations. ~ 10 CNSs to look at manually. grab from skew could randomly pick 10
+
+
+fix summary tables:
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/motif_file_list_up_99.txt scripts_99/uniq_motif_up_99.sh
+51544877[].mgr-04.i
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/motif_file_list_down_99.txt scripts_99/uniq_motif_down_99.sh
+51544878[].mgr-04.i
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_up_99.txt scripts_99/uniq_put_7mer_up_99.sh
+51544879[].mgr-04.i
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_down_99.txt scripts_99/uniq_put_7mer_down_99.sh
+51544880[].mgr-04.i
+
+that didn't work, new idea, only give it a single processor  / thread
+
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/motif_file_list_up_99.txt scripts_99/uniq_motif_up_99.sh
+51545194[].mgr-04.i
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/motif_file_list_down_99.txt scripts_99/uniq_motif_down_99.sh
+51545195[].mgr-04.i
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_up_99.txt scripts_99/uniq_put_7mer_up_99.sh
+51545196[].mgr-04.i
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_down_99.txt scripts_99/uniq_put_7mer_down_99.sh
+51545197[].mgr-04.i
+
+:( should also run up / down separately ie make sure one finished first
+
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/motif_file_list_up_99.txt scripts_99/uniq_motif_up_99.sh
+51546472[].mgr-04.i
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_up_99.txt scripts_99/uniq_put_7mer_up_99.sh
+51546504[].mgr-04.i
+
+wait a little
+
+WHAT IS GOING ON!? try changing opening method
+
+Chad strong candidate: emily josephs: Ning Jiang: Jiming Jiang: Kevin Leui (comp sci maybe) Some strong stat component: Shinhan: Jeff connor or gidean: marjorie Weber
+
+- Get deadline for committee formation
+
+- cns in tandem much closer than further ones
