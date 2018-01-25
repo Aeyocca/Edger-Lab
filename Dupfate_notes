@@ -710,3 +710,11 @@ Chad strong candidate: emily josephs: Ning Jiang: Jiming Jiang: Kevin Leui (comp
 [yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_down_99.txt scripts_99/uniq_put_7mer_down_99.sh
 51569988[].mgr-04.i
 
+
+DAP-seq data set with putative motifs for >500 TFs, can see what we get hits to I guess. Cant think of a good way to compare, can blast but they are all in meme format so have probabilities of given nucleotides, must be some way to convert that all into a file like the one of >300 I have, yea ask Pat about that
+Therefore it would be:
+- create a file similar to what I have for the 300 but with the DAP-seq data, just a little bit more of a way to narrow down the list
+
+What do I want to find? I want to demonstrate paralogs differ in their stress responsiveness due to differential CNSs. Need to show they are different and show that CNSs in responsive paralogs are significantly associated with upregulation. Would also be awesome of copy number diff of TF binding site had something to do with it
+
+
