@@ -697,3 +697,16 @@ Chad strong candidate: emily josephs: Ning Jiang: Jiming Jiang: Kevin Leui (comp
 - Get deadline for committee formation
 
 - cns in tandem much closer than further ones
+
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/motif_file_list_down_99.txt scripts_99/uniq_motif_down_99.sh
+51568715[].mgr-04.i
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_down_99.txt scripts_99/uniq_put_7mer_down_99.sh
+51568730[].mgr-04.i
+
+
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_up_99.txt scripts_99/uniq_put_7mer_up_99.sh
+51569985[].mgr-04.i
+[yoccaala@dev-intel14 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_down_99.txt scripts_99/uniq_put_7mer_down_99.sh
+51569988[].mgr-04.i
+
