@@ -718,3 +718,37 @@ Therefore it would be:
 What do I want to find? I want to demonstrate paralogs differ in their stress responsiveness due to differential CNSs. Need to show they are different and show that CNSs in responsive paralogs are significantly associated with upregulation. Would also be awesome of copy number diff of TF binding site had something to do with it
 
 
+1-26-18
+
+as much as i hate to say it, i should redo my perms with just the cnss found in the alpha dup set
+Regardless, I should make a file with the CNSs of just the alpha duplicates
+
+High confidence set of kmers significantly associated with stress response:
+	- first get all with significance value of one, then do I guess histogram of the significance values of these kmers in their paralogs, look for the smallest bin possibly? That sounds good. Nice, got two coding projects ahead for me. At the same time, try to make those tables whole (unique motifs / putative 7mers. I think I can do it, now going to have up / down written to separate files then just combine them manually)
+	
+	
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/motif_file_list_up_99.txt scripts_99/uniq_motif_up_99.sh
+51663269[].mgr-04.i
+51665714[].mgr-04.i
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/motif_file_list_down_99.txt scripts_99/uniq_motif_down_99.sh
+51663272[].mgr-04.i
+51665727[].mgr-04.i
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_up_99.txt scripts_99/uniq_put_7mer_up_99.sh
+51663274[].mgr-04.i
+51665742[].mgr-04.i
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_99/put_7mer_file_list_down_99.txt scripts_99/uniq_put_7mer_down_99.sh
+51663280[].mgr-04.i
+51665752[].mgr-04.i
+
+screw it, just going to combine all temp files manually at the end
+
+
+1400 alpha duplicate pairs, 2800 genes total
+
+
+
+
+
