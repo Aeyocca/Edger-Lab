@@ -749,6 +749,29 @@ screw it, just going to combine all temp files manually at the end
 1400 alpha duplicate pairs, 2800 genes total
 
 
+Pipeline for running permutation kmer counts to the point of getting significance files
+
+	- Take permutations in R
+	- upload to hpcc in alpha_permutations/ directory
+	- run jellyfish.
+		- create jellyfish/ directory within alpha perm
+		- create perm_file_list
+		- qsub -t 1-1000 -v INFILE=perm_file_list.txt jellyfish_7.sh
+		- will output into jellyfish file a list of dump and .fa files
+		- need to convert those .fa files to one liners
+			- fa_to_one_liner.sh (uses fa_to_one_liner.pl)
+			- make directory one_liners/ within jellyfish to put these in to
+		- I think after that download locally for sig calculations
+		
+[yoccaala@dev-intel14-k20 alpha_Permutations]$ qsub -t 1-1000 -v INFILE=aperm_file_list.txt jellyfish_7.sh
+51683820[].mgr-04.i
+51684109[].mgr-04.i
+
+jellyfish count -m 7 -s 100M -t 1 -o jellyfish/${NAME}binary_7.jf ${LINE}
+
+jellyfish dump jellyfish/${NAME}_binary_7.jf_0 > jellyfish/${NAME}_dump_7.fa
+ segmentation fault, core dumped look up later
 
 
+		
 
