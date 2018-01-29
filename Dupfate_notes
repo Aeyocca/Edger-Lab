@@ -772,6 +772,47 @@ jellyfish count -m 7 -s 100M -t 1 -o jellyfish/${NAME}binary_7.jf ${LINE}
 jellyfish dump jellyfish/${NAME}_binary_7.jf_0 > jellyfish/${NAME}_dump_7.fa
  segmentation fault, core dumped look up later
 
+1-29-18
+
+segmentation fault was due to repeat sequences in permutation files, really impressed there were no duplicates in the other permutations. Took 1000 out of 65k so little prob of overlap, but out of 1k reps you would think it would have happened at least once. Ah well, I think taking the random samples without replacement will be fine, actually will probably be beetter than with replacement
+
+turned out to be dos2unix thing, didn't do that so was getting segmentation fault, I think rolling without replacement still the better way to go though
+
+[yoccaala@dev-intel14-k20 alpha_permutations]$ qsub -t 1-1000 -v INFILE=file_list_aperm.txt jellyfish_7.sh
+51896713[].mgr-04.i
+
+aperm_106_binary_7.jf_0
+aperm_1000binary_7.jf_0
+
+51897273[].mgr-04.i
+
+
+[yoccaala@dev-intel14-k20 alpha_permutations]$ qsub -t 1-1000 -v INFILE=jellyfish/file_list_fa.txt fa_to_one_liner.sh
+51905975[].mgr-04.i
+
+[yoccaala@dev-intel14-k20 alpha_permutations]$ qsub -t 1-1000 -v INFILE=file_list_fa.txt fa_to_one_liner.sh
+51906885[].mgr-04.i
+
+If this doesn't work, just move all the fa to one line stuff into jellyfish folder and submit from there, should have done that in the first place, yup gotta do that
+
+[yoccaala@dev-intel14-k20 jellyfish]$ qsub -t 1-1000 -v INFILE=file_list_fa.txt fa_to_one_liner.sh
+51911620[].mgr-04.i
+
+The qsub script was taking to the wrong directory, fixed it to go to alpha_permutations
+51911972[].mgr-04.i
+
+Nice, starting to work, now we have files (eg  aperm_10_dump_7_one.fa). That have kmer\tcount
+I believe the next steps to create the significance files are done locally in R, now I am faced with the problem of having all those that are in the treatment but not the permutations represented... hold on, no way not going to find all possible kmers across 1k permutations, right?? like not a single time? we shall see, start setting up in R, going to take maybe an hour to create the one liners
+
+Something seemed to screw up around the 200th round. I think it was just a technical error, but the perl script was printing the usage statement. That means some command line argument was missing. Therefore, I added to the qsub script to print out all the environmental variables at the end, so if something is missing, I can see what / when it starts to be missing
+
+
+51916876[].mgr-04.i
+51917253[].mgr-04.i
+
+fa file list only had 135 lines for some stupid reason
+
+51918558[].mgr-04.i
 
 		
 
