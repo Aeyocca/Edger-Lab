@@ -815,4 +815,211 @@ fa file list only had 135 lines for some stupid reason
 51918558[].mgr-04.i
 
 		
+		
+		
+1-30-18
 
+Histogram of all significance values as well as >0.95
+histograms of non and changes look fairly similar, this is evidence that they do contain overrep sequences, but it seems these over rep kmers are not sufficient to cause change. Again, perhaps edgeR is too stringent, or maybe we have to dig deeper. Definitely seems like non-responsive paralogs will have these kmers at high counts. Maybe that's not whats causing the response / non-response. Lets find a list of genes with similar CNS (how to measure) but also different responses. First check exp level and see if they are really close anyway. If they are divergent, will be interesting to overlay some methylation data.
+
+
+Based on the > 0.95 histograms, looks like we should take 0.99 as cutoff again. Keep underrep at <0.05
+Meja looks like only stress with high abundance underrep sequences, but that could just be that the over rep are so abundant
+
+
+Make the following directories withint blast_run/
+	- scripts_alpha
+	- file_lists_alpha
+	- asig_7/put_7mer/uniq
+	- asig_fa_7
+	- blast_output/asig/
+	- motifs/alpha/uniq
+	- asig_7/kmer_blast_hit
+	
+Blast against ~300 known motifs
+
+	- Convert significance files in asig_7/ to fa files with sig values >0.99 (over) or <0.05 (under)
+		- sig_to_fa_99.pl / sig_to_fa_99.sh (I think I can mostly use the same sh scripts just changing INFILE.. Ah, some of them specify where to save files, in that case need to edit and replace 99 with alpha
+	- Blast against motifs
+		- blast_sig.sh
+	- ext mot / ext put 7mers
+	- check diagnostics
+	- check concordance between alpha / overall permutation put7mers, if that isn't making sense back up a few steps, try to get a good picture of what is going on (HOPEFULLY NOT RANDOM)
+	
+Keep track of what my file names are:
+./sig_to_fa_99.pl -i asig_7/${LINE} -o asig_fa_7/${NAME}_asig_over.fa -u sig_fa_7/${NAME}_asig_under.fa
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-24 -v INFILE=file_lists_alpha/asig_file_list.txt scripts_alpha/sig_to_fa_alpha.sh
+51965118[].mgr-04.i
+51965214[].mgr-04.i
+
+blastall -p blastn -d "database/Motifs_db" -i asig_fa_7/${LINE} -e 0.5 -o blast_output/asig/${NAME}.blast -W 4
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_alpha/fa_alpha_file_list.txt scripts_alpha/blast_sig_treat_to_motif_alpha.sh
+51965299[].mgr-04.i
+
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_alpha/blast_alpha_file_list.txt scripts_alpha/ext_mot_from_blast_alpha.sh
+51967119[].mgr-04.i
+51967293[].mgr-04.i
+51967310[].mgr-04.i
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_alpha/blast_alpha_file_list.txt scripts_alpha/ext_kmer_from_blast_alpha.sh
+51967126[].mgr-04.i
+
+grep '^Query: 1 ' blast_output/asig/${LINE} | sort | uniq | awk -F " " '{print $3}' | sed 's/-//g' | tr '[:lower:]' '[:upper:]' | cat > asig_7/kmer_blast_hit/${NAME}_blast_7mer.txt
+# cut -d" " -f 3 | sed 's/-//g'
+
+./put_7mers.pl -i asig_fa_7/${NAME}.fa -j asig_7/kmer_blast_hit/${NAME}_blast_7mer.txt -t temp_${PBS_ARRAYID}.txt -o asig_7/put_7mer/${NAME}_put_7mer.txt
+
+grep '^>' blast_output/asig/${LINE} | sort | uniq | cat > motifs/asig/${NAME}_motif.txt
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/motif_up_alpha_file_list.txt scripts_alpha/uniq_motif_up_alpha.sh
+51967516[].mgr-04.i
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/motif_down_alpha_file_list.txt scripts_alpha/uniq_motif_down_alpha.sh
+51967517[].mgr-04.i
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/put_up_alpha_file_list.txt scripts_alpha/uniq_put_7mer_up_alpha.sh
+51967518[].mgr-04.i
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/put_down_alpha_file_list.txt scripts_alpha/uniq_put_7mer_down_alpha.sh
+51967521[].mgr-04.i
+
+
+Cannot open the input file asig_7/put_7mer/at_cold_up_comp_dump_7_asig_under_blast_7mer.txt
+	- ext_kmer_from_blast script did not complete, should have made file set in asig_7/put_7mer directory
+Cannot open the input file motifs/asig/at_salt_up_comp_dump_7_asig_over_motif.txt
+	- wrong file path specified in ext_motif script, quick fix
+	
+rerun ext_kmer first
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_alpha/blast_alpha_file_list.txt scripts_alpha/ext_kmer_from_blast_alpha.sh
+51967954[].mgr-04.i
+
+went well
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/motif_up_alpha_file_list.txt scripts_alpha/uniq_motif_up_alpha.sh
+51968033[].mgr-04.i
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/motif_down_alpha_file_list.txt scripts_alpha/uniq_motif_down_alpha.sh
+51968034[].mgr-04.i
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/put_up_alpha_file_list.txt scripts_alpha/uniq_put_7mer_up_alpha.sh
+51968035[].mgr-04.i
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/put_down_alpha_file_list.txt scripts_alpha/uniq_put_7mer_down_alpha.sh
+51968036[].mgr-04.i
+
+Cannot open the input file asig_7/put_7mer/at_cold_up_inf_dump_7_asig_under_blast_7mer.txt
+
+at_cold_up_comp_dump_7_asig_over_blast_7mer.txt
+at_salt_up_inf_dump_7_asig_under_put_7mer.txt
+
+./put_7mers.pl -i asig_fa_7/${NAME}.fa -j asig_7/kmer_blast_hit/${NAME}_blast_7mer.txt -t temp_${PBS_ARRAYID}.txt -o asig_7/put_7mer/${NAME}_put_7mer.txt
+
+./uniq_motif.pl -c asig_7/put_7mer/${LINE} -n asig_7/put_7mer/${NON} -o asig_7/put_7mer/uniq/${NAME}_uniq.txt -t asig_7/put_7mer/uniq/${NON_NAME}_uniq.txt -s temp_put_up_${PBS_ARRAYID}.txt
+
+change file list from those in kmer_blast_hit to those in put_7mer
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/put_up_file_list.txt scripts_alpha/uniq_put_7mer_up_alpha.sh
+51968518[].mgr-04.i
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/put_down_file_list.txt scripts_alpha/uniq_put_7mer_down_alpha.sh
+51968519[].mgr-04.i
+
+Alrighty, now lets make a table comparing numbers of sig put kmers in global and alpha
+want to see the overlap between the two, cat into one file, then do uniq and wc -l
+
+at_salt_nonup_comp_dump_7_sig_over_99_put_7mer_uniq.txt
+at_salt_nonup_comp_dump_7_asig_over_put_7mer_uniq.txt
+
+file lists of one, replace sig with asig, remove 99, make base everything before dump
+	
+grep -f sig_7/99/put_7mer/uniq/${LINE} asig_7/put_7mer/uniq/${ALPHA} | cat > put_7mer_comp/${BASE}_put_7mer_shared.txt
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-48 -v INFILE=put_comp_file_list.txt put_7mer_comp.sh
+51970428[].mgr-04.i
+
+
+
+Lets pull kmers with sig value of 1 (*) whose paralog has a count of 0 (info should be in the significance files) see how many kmers we are left with at that point
+
+*should I do 1, then the highest copy number, or just above a certain copy number? I think starting with 1 and seeing how many we are left with is a good place to start
+
+Alrighty, method of outputting a list of kmers \t responsive paralog sig value \t responseive paralog count \t non-responsive paralog count
+for each pair of response/non, although later should consider other methodology for downregulated genes maybe???
+
+	- open responsive significance file
+	- extract lines with sig value = 1
+	- take those kmers to find in the paralog significance file
+	- filter to include those with count of zero in paralog file
+	- print out desire information
+	
+Seems like I can do this in perl script, input up / nonup files, output final file, loading things into hash
+
+my $usage = "\n$0 -i <responsive file> -n <non-responsive file> -o <output> \n\n";
+
+high_conf_kmer.pl
+
+at_cold_down_comp_dump_7_one.fa_asig.txt
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-6 -v INFILE=high_conf_up_file_list.txt high_conf_kmer_up.sh
+51971383[].mgr-04.i
+51971432[].mgr-04.i
+51971474[].mgr-04.i
+51971527[].mgr-04.i
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-6 -v INFILE=high_conf_down_file_list.txt high_conf_kmer_down.sh
+51971390[].mgr-04.i
+51971434[].mgr-04.i
+51971479[].mgr-04.i
+51971528[].mgr-04.i
+
+
+hmmm, looks like im not really recovering anything. First add some statements to see if its working properly, then think about how to lower stringency
+
+
+my %sig_kmer;
+my %sig_kmer_count;
+my $lines_resp = 0;
+my $lines_non = 0;
+my $sig_one = 0;
+my $found_kmer = 0;
+my $all_met = 0;
+
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-6 -v INFILE=high_conf_up_file_list.txt high_conf_kmer_up.sh
+51972578[].mgr-04.i
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-6 -v INFILE=high_conf_down_file_list.txt high_conf_kmer_down.sh
+51972587[].mgr-04.i
+
+Lines read from asig_7/at_meja_up_comp_dump_7_one.fa_asig.txt:  16108
+Lines read from asig_7/at_meja_nonup_comp_dump_7_one.fa_asig.txt:       0
+		       at_meja_nonup_comp_dump_7_one.fa_asig.txt
+ aha, first round, I had the perl script open these ones for writting so must have overwritten the files, reupload and try again
+
+51972755[].mgr-04.i
+
+51972763[].mgr-04.i
+
+Heyoo, this one worked fine
+Line counts for the output files, subtract one for the header and get # of kmers with sig value 1 and absent in the paralog
+   79 at_cold_down_comp_dump_7.fa_asig.txt_one_and_none.txt
+   91 at_cold_down_inf_dump_7.fa_asig.txt_one_and_none.txt
+  103 at_cold_up_comp_dump_7.fa_asig.txt_one_and_none.txt
+  104 at_cold_up_inf_dump_7.fa_asig.txt_one_and_none.txt
+  634 at_meja_down_comp_dump_7.fa_asig.txt_one_and_none.txt
+  634 at_meja_down_inf_dump_7.fa_asig.txt_one_and_none.txt
+ 1092 at_meja_up_comp_dump_7.fa_asig.txt_one_and_none.txt
+ 1092 at_meja_up_inf_dump_7.fa_asig.txt_one_and_none.txt
+  129 at_salt_down_comp_dump_7.fa_asig.txt_one_and_none.txt
+  133 at_salt_down_inf_dump_7.fa_asig.txt_one_and_none.txt
+   93 at_salt_up_comp_dump_7.fa_asig.txt_one_and_none.txt
+   96 at_salt_up_inf_dump_7.fa_asig.txt_one_and_none.txt
+
+manually check the files, sort and find the highest few copy numbers:
+
+8  at_cold_down_comp_dump_7.fa_asig.txt_one_and_none.txt
+8  at_cold_down_inf_dump_7.fa_asig.txt_one_and_none.txt
+7  at_cold_up_comp_dump_7.fa_asig.txt_one_and_none.txt
+7  at_cold_up_inf_dump_7.fa_asig.txt_one_and_none.txt
+7  at_meja_down_comp_dump_7.fa_asig.txt_one_and_none.txt
+7  at_meja_down_inf_dump_7.fa_asig.txt_one_and_none.txt
+5  at_meja_up_comp_dump_7.fa_asig.txt_one_and_none.txt
+5  at_meja_up_inf_dump_7.fa_asig.txt_one_and_none.txt
+9  at_salt_down_comp_dump_7.fa_asig.txt_one_and_none.txt
+9  at_salt_down_inf_dump_7.fa_asig.txt_one_and_none.txt
+9  at_salt_up_comp_dump_7.fa_asig.txt_one_and_none.txt
+9  at_salt_up_inf_dump_7.fa_asig.txt_one_and_none.txt
