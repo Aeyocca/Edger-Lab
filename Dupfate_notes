@@ -1023,3 +1023,89 @@ manually check the files, sort and find the highest few copy numbers:
 9  at_salt_down_inf_dump_7.fa_asig.txt_one_and_none.txt
 9  at_salt_up_comp_dump_7.fa_asig.txt_one_and_none.txt
 9  at_salt_up_inf_dump_7.fa_asig.txt_one_and_none.txt
+
+
+1-31-18
+
+How many putative kmers do I cut down on by allowing one mismatch on BLAST????
+blastall -p blastn -d "database/Motifs_db" -i sig_fa_7/99/${LINE} -e 0.5 -o blast_output/99/${NAME}.blast -W 4
+
+change e-value cutoff to 0.94 (6 bp match). (put -e 1 in script)
+0.24 is 7 bp match, 3.7 is 5 bp match
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_alpha/fa_alpha_file_list.txt scripts_alpha/blast_sig_treat_to_motif_alpha_6.sh
+52005168[].mgr-04.i
+
+Don't really care about getting motif names and what not, just care about put 7mers, so not making any motif 6 directories
+
+After blast is done, ext_kmer, then uniq_put_7mer
+
+Seems files ~50% larger. surprisingly taking a while to run, check usage request, make sure will not exceed walltime
+6hr 15 processors across 5 nodes, 10Gb mem, should be fine, just taking a bit
+
+Need to give thought of how going to present high confidence genes (I think I should get to the level of genes)
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_alpha/blast_6_file_list.txt scripts_alpha/ext_kmer_from_blast_alpha_6.sh
+52011624[].mgr-04.i
+52012381[].mgr-04.i
+
+Meeting today present:
+	- alpha permutations
+	- New set of putative 7mers
+	- hand picked list of genes:
+		- highest kmer count in repsonsive that has sig=1, while non-responsive paralog has 0
+	- What do put 7mer counts look like after matching at least 6bp instead of all 7?
+	- NEXT STEPS:
+		- Should I include the DAP-seq info?
+			- screened 1800 TF
+			- had them on beads, threw DNA at them, sequenced what bound
+			- Predicted binding motifs for ~500 TFs
+				- binding info in MEME format
+				- IF cont with this, should call motif based on cutoffs, include every bp with probability > 0? have example file open and ready
+		- Check out hand picked genes
+		- Not too sure how much I can do with this? Is this enough of a story? No, need to start integrating CV data
+			- But CV data really vague, really only have about 10 responsive orthologs per treatment, actually, get those numbers:
+				- Complete set of genes:
+				- Cold: 135
+				- Salt: 984
+				- Meja: 738
+				- Alpha Orthologs
+				- Cold: 17
+				- Salt: 70
+				- Meja: 63
+				
+			- Is there any way to see CNS in CV, can we say some TF binding sites were gained de novo or lost in responsive duplicates? What info do we want to pull out?
+			- Is it safe to assume CV is ancestral state? 
+				- If so, then can pull out informative genes, and really just pull out the CNS and compare them right?
+					- Align, look for mutations / indels
+			
+			
+To do:
+- Gene lists for high abundant kmers, do at least 5
+- Get at least 5 consecutive bp calls, do 0.8 threshold
+- Network modularity
+- Do less Cv stuff
+- Think about think tank stuff
+- read 6 papers
+- Compare bin frequencies across duplication classes across several species in 65k (TF probably distal elements, so when duplicated, instant psuedogene) 
+
+Network connectivity implications:
+- Gene and genome duplications the impact of dosage-sensitivity on the fate of nuclear genes
+
+
+Blast 6 file list:   at_cold_down_comp_dump_7_asig_over_6.blast
+Need asig_fa_7 file: at_cold_down_comp_dump_7_asig_over.fa
+
+[yoccaala@dev-intel16 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_alpha/blast_6_file_list.txt scripts_alpha/ext_kmer_from_blast_alpha_6.sh
+52013701[].mgr-04.i
+
+
+for f in $(find motifs/ -name 'meme_m1.txt'); do echo $f; done 
+
+Thank you stack overflow
+
+instead of do echo $f, see if can write in perl script
+
+
+
+
