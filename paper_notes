@@ -1,0 +1,49 @@
+#Random thoughts and notes from some readings, haven't decided to curate all here or on google drive, decide later but starting here
+
+2-01-18
+
+Buzz words for think tank meeting:
+  - Network analysis
+  - regulatory evolution
+  - single cell omics
+  - Comparative genomics
+  - deep learning algorithms
+  - Genome assembly / quality assessment
+  - Transposable elements probably need to be addressed at some point
+  - developing / improving resources
+  - 
+
+Conserved noncoding sequences (CNSs) in higher plants
+Michael Freeling and Shabarinath Subramaniam
+
+  - Maybe CNS are consequence of selection on genes. Maybe thats why they cluster around genes, I mean they totally are conserved for regulatory purposes, but there could be some that are around simply by LD, To get evidence of this, could look for signs of strong selection in nearby genes, higher selection genes will have probably more CNSs as there will be less recomb. Perhaps older genes will have closer CNS, and new strong selected genes will have CNS further away
+  - Concept of useful divergence: not too close but not too far. Too close would produce carryover from ancestor kind of like I stated above. Too far and binding sites will be difficult to pick out from sequence alone. How often do binding motifs change? How conserved are TF binding motifs? across all plants? what are the proportions in each class (conserved, semi-conserved, highly variable)?
+  - I don't but the argument on useful divergence. I think it just makes things harder outside of this window. Probably not impossible. Will most certainly get less information outside of this window. Is that just misguided? Brassicaceae seems to be within this window. 
+  - Spacing of CNSs can vary greatly between species
+  - it says binding sites degrade relatively quickly on an evolutionary time scale, but function seems to remain the same. Well binding sites are out of protein coding regions so more likely to mutate, but what recognizes them is a protein in most cases which needs very specific properties to recognize these sites, so shouldn't changes in binding sites require changes in protein structure???? Aside from direct binding there could be like enhancer and stabilization roles for these CNSs. I guess it doesn't make sense to me why or how these binding sites turn over yet retain the same function.
+  - CNS are 5' skewed in Arabidopsis
+  - A little confused, it seems CNSs are enriched in regulatory genes, but shouldn't we expect them the be enriched in regulatory gene TARGETS? I mean, chicken and egg situation right? not really, signal comes in, binds to existing protein which switches on / off TFs / genes, why have the TFs then? I guess can respond differently in different cells thats where methylation makes sense
+    - To address this, the corporation metaphor, this thing must be one big system to respond to stress, no straight line path for it. "The master regulators must themselves be highly regulated"
+    
+    
+    
+    
+The Most Deeply Conserved Noncoding Sequences in Plants Serve Similar Functions to Those in Vertebrates Despite Large Differences in Evolutionary Rates
+Diane Burgess and Michael Freeling
+
+  - Something must be evolutionarily different between plants and animals since verts have many CNEs and plants really don't have any
+  - Deeply conserved CNS <11kb away from genes compared to megabases in vertebrates
+  - ~70% of deep CNSs are intergenic, mostly 5' but some 3'
+  - eudicot CNS enriched for TF activity
+  - Published function of mono-eud CNS: THIC, micro-RNA, SHY/STI TFs and some MADS-BOX TF, CArG3
+  - super deep CNSs associated with RNA / alternative splicing is usually intragenic
+  - Synergistic binding on overlapping opposite strands / grooves Guturu et al 2013
+  - ********say some animal CNE differences bc of WGD, evidence WGD responsible for reduction of CNE so might expect same to be true in plant lineages, addition to looking at evo distance, check out WGD events as polyploidy leads to a lax selection of CNSs, but is it really as dramatic as the numbers say it is?
+  - No reason to despair, can still study this process of how CNSs change / what their dynamics are
+  
+  Fractionation mutagenesis and similar consequences of mechanisms removing dispensable or less-expressed DNA in plants
+Michael Freeling, Margaret R Woodhouse, Shabarinath Subramaniam, Gina Turco, Damon Lisch, James C Schnable
+  - Repeats flank regions of deletion of duplicated genes, evidence of intrachromosomal recombination. Same mechanism that removes TEs.
+  - subgenome dominance allows stoichiometry to be maintained while other copies mutate
+  - polyploidy has to have an immediate fitness effect right? are all polyploid events single organism? why are they swept through the population if they are just going to psuedogenize?
+  
