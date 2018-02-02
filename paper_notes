@@ -47,3 +47,19 @@ Michael Freeling, Margaret R Woodhouse, Shabarinath Subramaniam, Gina Turco, Dam
   - subgenome dominance allows stoichiometry to be maintained while other copies mutate
   - polyploidy has to have an immediate fitness effect right? are all polyploid events single organism? why are they swept through the population if they are just going to psuedogenize?
   
+  
+Evolution of Stress-Regulated Gene Expression in Duplicate Genes of Arabidopsis thaliana
+Cheng Zou, Melissa D. Lehti-Shiu, Michael Thomashow, Shin-Han Shiu
+
+  - Use gene family information to infer ancestral state, probably not the most accurate but the best they had to go off of here
+  - 16 different stresses in AtExpGeneAtlas or something like that, I think its microarray data, yea this was published in 2009
+  - Partitioning is the most likely result, could be due to biased retention of subfunc genes, would also respect retention to be over rep bc of dosage balance. While sig lower compared to random background, was still >> loss (in both copies)
+  
+  TF2Network: predicting transcription factor regulators and gene regulatory networks in Arabidopsis using publicly available binding site information
+Shubhada R. Kulkarni, Dries Vaneechoutte, Jan Van de Velde, Klaas Vandepoele
+
+  - Look 5kb upstream, mask exons, look 1 kb downstream. Accuracy in recovering known TFBS from ChIP and DH exps was greatest using 5kb upstream so they leave that as the default. Whats out distribution of CNSs? Seems like many more deep CNSs are <11kb away as stated in one of the papers above, so seems
+
+
+
+
