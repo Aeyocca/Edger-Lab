@@ -59,7 +59,52 @@ Cheng Zou, Melissa D. Lehti-Shiu, Michael Thomashow, Shin-Han Shiu
 Shubhada R. Kulkarni, Dries Vaneechoutte, Jan Van de Velde, Klaas Vandepoele
 
   - Look 5kb upstream, mask exons, look 1 kb downstream. Accuracy in recovering known TFBS from ChIP and DH exps was greatest using 5kb upstream so they leave that as the default. Whats out distribution of CNSs? Seems like many more deep CNSs are <11kb away as stated in one of the papers above, so seems
+  - How relatable is this to organisms outside of Arabidopsis?? What evo distance before BSs are no longer very conserved / meaningful
+  - built GRNs, overlay known GO annotations, do guilt by association. Able to do guilt by association for >6k/~11k genes with unknown function. Looked at RNA-seq data sets, DE agreed with guilt by association assignment in most cases. For example, GRN regulon with known salt responsive element, unkown gene also DE in salt stress.
+  - not super high recovery rate for circadian rhythm GO annotation, but still found some new ones which is cool
 
+A Collection of Conserved Noncoding Sequences to Study Gene Regulation in Flowering Plants1[OPEN]
+Jan Van de Velde, Michiel Van Bel, Dries Vaneechoutte, and Klaas Vandepoele
 
+  - Large number of non-function TFBS
+  - Assign TFBS function by functional enrichment of target genes
+  - To make sure CNS were not previously unannotated proteins, BLASTX to all known plant proteins
+  - Strong negative correlation between genome size and % CNS found in first 500bp upstream. Seems like 501-2000 is a subtle difference so I am a little surprised by that
+  - Got strong validation of their predicted TF functions from target GO enrichment
+  
+  
+ Some word vomit on what to discuss tomorrow:
+  - Want to identify some new TFBS invovled in stress
+  - Want to track evolutionary changes of TFBSs
+  - Want to analyze network rewiring in some places
+  - Genome / transcriptome assembly
+  - CNS pipeline
+  - Stress / stage specific expression in Rosaceae
+  - I mean really all I am doing is clever comparisons right? So what are the most clever comparisons? What questions do I want to answer? Do I want to model the process of TFBS evolution? Model Network change? Track changes in potentially agronomic important network?
+  - As far as experiments, I should mine existing resources, how to make a decision on which resources to generate? What would be worth the time? 
+  - Lets get specific:
+    - Identify putative TFBSs, best ways:
+      - ChIP seq / DHS support
+      - Could do stress responsive ones using the differential stress data
+      - For the TFBS functional enrichment, there was strong support for accuracy when simply GO enrichment on targets, but that might have some ascertainment bias associated with it
+      - What could you do that is new to find TFBS? I think the kmer enrichment is pretty slick. check for signs of selection in regions upstream / downstream of genes
+      - Is is possible to gain more support for long range TFBS interactions using Hi-C / some sort of Chromatin hybridization technique
+      - Although really whats the prevalence of these interactions / what would I gain? Seems to me based on readings that just throwing out there ~90% are within 5kbp right?
+      - Ideally what do I want to say about TFBS evolution? What is my hypothesis? Hypothesize they will be recovered in CNS regions, they will be to a certain extent variable between clades, they will show signs of selection, Many are unknown currently, many could have multiple binding sites associated with it. The distance to target gene is expected to be proximal. Their presence will be some of the first step in subfunctionalization / maybe psuedogenization (but nonsense subs should come first right? Well maybe those will only come once no longer expressed) Seems like a lot of this hinges on TFBS being the main driver behind expression right? Well many would argue chromatin organization is more important right? Should layer that on next really in these comparisons, I think there is some good information to be had there
 
-
+  - What about my really out there ideas?
+    - Something about crop improvement
+    - develop method to identify CNS / regulons
+    - Model plant regulatory evolution
+    - predict what genes are about to subfunctionalize
+    - drive the subfunctionalization / neofunctionalization by some sort of knockout / directed artificial selection
+    - Diversity panels / RIL population would be really handy for some regulatory element comparisons, right?
+    - Whats the mechanism of going from silenced to unsilenced, like how important is the chromatin modification???
+    - Should I do whole genome alignment stuff or do some phylo footprint where just looking proximal to orthologs? 
+    - I think there is some way to work with the meme format, I think its called a position weight matrix?
+  
+  
+  
+  
+  
+  
