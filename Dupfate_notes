@@ -1107,5 +1107,28 @@ Thank you stack overflow
 instead of do echo $f, see if can write in perl script
 
 
+2-05-18
+/var/spool/torque/mom_priv/jobs/52013701-1.mgr-04.i.SC: line 20: ASIG: command not found
+
+The alpha dup file, asig_fa_7/.fa, does not exist.
+
+at_cold_down_inf_dump_7_asig_over_6.blast
+ASIG = $(echo ${LINE} | sed 's/_6\.blast//')
+
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-48 -v INFILE=file_lists_alpha/blast_6_file_list.txt scripts_alpha/ext_kmer_from_blast_alpha_6.sh
+52139605[].mgr-04.i
+
+/var/spool/torque/mom_priv/jobs/52139605-1.mgr-04.i.SC: line 24: asig_7/kmer_blast_hit/6/at_cold_down_comp_dump_7_asig_over_6_blast_7mer.txt: cannot overwrite existing file
+tr: write error: Broken pipe
+blast_run/asig_7/put_7mer/6
+
+52139647[].mgr-04.i
+
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/put_up_6_file_list.txt scripts_alpha/uniq_put_7mer_up_alpha_6.sh
+52139721[].mgr-04.i
+[yoccaala@dev-intel14-k20 blast_run]$ qsub -t 1-12 -v INFILE=file_lists_alpha/put_down_6_file_list.txt scripts_alpha/uniq_put_7mer_down_alpha_6.sh
+52139722[].mgr-04.i
+
 
 
