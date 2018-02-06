@@ -1,0 +1,43 @@
+Look across A. thaliana for CNS differences / hopefully functional enrichment for stress responsive genes
+  - Start with 18 accessions, MCScanX call orthologs, look upstream
+  - CoGe / progressiveCactus
+  - Pull coordinates out / take from GFF file, pull sequences upstream, blast search above a certain bit score
+  - Make CNS GFF file, treat like exon, search for synteny
+  - Presence / absence or SNPs
+
+Alrighty, I think I will just try and familiarize myself with some of CoGe's tools. Do a comparison between Col-0 and just three other accessions taken from: Multiple reference genomes and transcriptomes for Arabidopsis thaliana. Xiangchao, Gan, et. al. (2011)
+
+Three other accessions: Tsu-0 (Japan) CS6874, Can-0 (Canary Isles) CS6660, Oy-0 (Norway) CS6824
+
+Download the full genome and upload to CoGe
+
+
+$ curl -O http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/fasta/MASKED/tsu_0.v7.PR_in_lowercase.fas
+$ curl -O http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/fasta/MASKED/can_0.v7.PR_in_lowercase.fas
+$ curl -O http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/fasta/MASKED/oy_0.v7.PR_in_lowercase.fas
+
+From 1001 Genomes website:
+files of annotatations (GFF3, GTF and other formats)
+denovo annotations predicted using mGene.ngs and the seedling RNA-seq data, independently of the TAIR10 annotations. This directory contains de novo gene annotations for the 19 accessions (*..*). We provide two formats (gene finder format version 3: *.gff3 and matlab/octave data files: *.mat) in two coordinate systems (reference genome: *.Col-0.{gff3,mat} and strain coordinate system: rest).
+
+Four possible data files: 
+	
+http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/annotations/denovo_annotation_9.4.2011/gene_models/denovo_annotation.Can_0.Col-0.gff3.bz2
+
+http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/annotations/denovo_annotation_9.4.2011/gene_models/denovo_annotation.Can_0.Col-0.mat
+
+http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/annotations/denovo_annotation_9.4.2011/gene_models/denovo_annotation.Can_0.gff3.bz2
+
+http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/annotations/denovo_annotation_9.4.2011/gene_models/denovo_annotation.Can_0.mat
+
+Since we want to do some CNS search I think it will be best to get in Col-0 coordinates... but we want to extract regions upstream from full sequence files which correspond to given reference sequence.. alright in that case then we should take the file if gff3 format in the strain coordinate system (4th one) yea that sounds good.
+
+$ curl -O http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/annotations/denovo_annotation_9.4.2011/gene_models/denovo_annotation.Oy_0.gff3.bz2
+$ curl -O http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/annotations/denovo_annotation_9.4.2011/gene_models/denovo_annotation.Can_0.gff3.bz2
+$ curl -O http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/annotations/denovo_annotation_9.4.2011/gene_models/denovo_annotation.Tsu_0.gff3.bz2
+
+
+upload files to CoGe, not sure what to put for version so I'm just labeling them Gan_2011 for version and source
+
+Seems like loading genome annotation did not work, try unzipping locally then uploading see if that works:
+$ bzip2 -d <file_name>
