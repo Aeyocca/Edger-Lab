@@ -41,3 +41,59 @@ upload files to CoGe, not sure what to put for version so I'm just labeling them
 
 Seems like loading genome annotation did not work, try unzipping locally then uploading see if that works:
 $ bzip2 -d <file_name>
+
+uploading new annotations:
+Can-0: https://genomevolution.org/r/10gzd
+Oy-0: https://genomevolution.org/r/10gzl
+Tsu-0: https://genomevolution.org/r/10gzn
+
+did not work:
+upload to hpcc, dos2unix, then try and upload to CoGe, idk what could be wrong
+Can-0: https://genomevolution.org/r/10gzo
+Oy-0: https://genomevolution.org/r/10gzp
+Tsu-0: https://genomevolution.org/r/10gzq
+
+Nope, nevermind seemed they all worked fine, look up how to remove a few
+
+SynMap between Can-0 and Oy-0: https://genomevolution.org/r/10gzz
+Just playing around for now, need to think of how to compare CNSs..... first need to call syntenic orthologs... shouldn't they carry the same annotation though?
+
+I am a little concerned the genome size of these accessions is ~117Mb, seems pretty small may be incomplete. 
+
+Example of synmap times:
+Generating fasta file				Completed in 1m 54.0s
+Generating fasta file				Completed in 1m 48.0s
+Generating LastDB				Completed in 2m 0.6s
+Running genome comparison			Completed in 28.8s
+Creating BED files				Completed in 20.2s
+Filtering tandem dups				Completed in 36.1s
+Formatting for DAGChainer			Completed in 0.7s
+Converting to genomic order			Completed in 1.3s
+Running DAGChainer				Completed in 4.0s
+Converting to genomic coordinates		Completed in 0.3s
+Generating svg image				Completed in 1.0s
+Generating images				Completed in 1.1s
+Processing Subject Tandem Duplicate File	Completed in 0.8s
+Processing Query Tandem Duplicate File		Completed in 0.8s
+Generating GEvo links to condensed file 	Completed in 1.0s
+
+
+From what I read online, it seems DAGChainer output in genomic coordinates is what I want, Example of the file format found: https://genomevolution.org/wiki/index.php/SynMap
+
+DAGChainer output should give me the list of syntenic orthologs that I should use to search for CNSs. Hmm, how to do multispecies comparisons, should I try to create the DAGChainer pipeline locally or what?? Do I call all syntenic orthologs back to Col-0 or is there a way to call them across all accessions??
+
+I have: a way to call syntenic orthologs between two organisms. Pretty slow though, next steps:
+	- parse file to create file in the format Col-0 id, start, stop, Acc id, start, stop
+		- Think a little more what info this file needs
+		- Add in info for all accessions in same file, I think just IDs starts and stops will be needed wrench in the plan though is the annotation. They are not just full genes, exon / CDS information, how to parse????
+	- Extract orthologous gene pairs for which we have CNSs called
+	- Extract 5kb upstream all gene pairs
+	- That shouldn't be too hard to get in fasta format, right?
+	- what format do I need to compare CNSs? what comparisons do I want to do?
+		- presence / absence... HOW?
+			- Look in regions upstream orthologous gene pairs. If CNS located in Col-0, search region upstream Accession for this CNS, if exact match, then present, if no exact match, then absent / mutated
+			- Blast the CNS if present against upstream ortholog, look for good hit, yea this later part is coming together nicely, the hard part is high throughput calling orthologs, extracting exact gene start information
+			
+First step is to parse DAGChainer output and create syntenic ortholog file??? Actually shouldn't that file be sufficient for the next step? Could think of a way to consolidate them all to one file
+
+Will they all be 1:1? I think this filters out tandem duplicates so they should be, but across other species they might be because of duplication / losses / differential retention yada yada yada
