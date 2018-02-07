@@ -36,7 +36,7 @@ $ curl -O http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/annotations/denovo_annotat
 $ curl -O http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/annotations/denovo_annotation_9.4.2011/gene_models/denovo_annotation.Can_0.gff3.bz2
 $ curl -O http://mtweb.cs.ucl.ac.uk/mus/www/19genomes/annotations/denovo_annotation_9.4.2011/gene_models/denovo_annotation.Tsu_0.gff3.bz2
 
-
+2-07-18
 upload files to CoGe, not sure what to put for version so I'm just labeling them Gan_2011 for version and source
 
 Seems like loading genome annotation did not work, try unzipping locally then uploading see if that works:
@@ -58,7 +58,7 @@ Nope, nevermind seemed they all worked fine, look up how to remove a few
 SynMap between Can-0 and Oy-0: https://genomevolution.org/r/10gzz
 Just playing around for now, need to think of how to compare CNSs..... first need to call syntenic orthologs... shouldn't they carry the same annotation though?
 
-I am a little concerned the genome size of these accessions is ~117Mb, seems pretty small may be incomplete. 
+I am a little concerned the genome size of these accessions is ~117Mb, seems pretty small may be incomplete. Well Tair10 is 119 so I think its fine
 
 Example of synmap times:
 Generating fasta file				Completed in 1m 54.0s
@@ -83,17 +83,79 @@ From what I read online, it seems DAGChainer output in genomic coordinates is wh
 DAGChainer output should give me the list of syntenic orthologs that I should use to search for CNSs. Hmm, how to do multispecies comparisons, should I try to create the DAGChainer pipeline locally or what?? Do I call all syntenic orthologs back to Col-0 or is there a way to call them across all accessions??
 
 I have: a way to call syntenic orthologs between two organisms. Pretty slow though, next steps:
-	- parse file to create file in the format Col-0 id, start, stop, Acc id, start, stop
+	1.) parse file to create file in the format Col-0 id, start, stop, Acc id, start, stop
 		- Think a little more what info this file needs
 		- Add in info for all accessions in same file, I think just IDs starts and stops will be needed wrench in the plan though is the annotation. They are not just full genes, exon / CDS information, how to parse????
-	- Extract orthologous gene pairs for which we have CNSs called
-	- Extract 5kb upstream all gene pairs
-	- That shouldn't be too hard to get in fasta format, right?
-	- what format do I need to compare CNSs? what comparisons do I want to do?
+	2.) Extract orthologous gene pairs for which we have CNSs called
+	3.) Extract 5kb upstream all gene pairs
+		- That shouldn't be too hard to get in fasta format, right?
+	4.) what format do I need to compare CNSs? what comparisons do I want to do?
 		- presence / absence... HOW?
 			- Look in regions upstream orthologous gene pairs. If CNS located in Col-0, search region upstream Accession for this CNS, if exact match, then present, if no exact match, then absent / mutated
 			- Blast the CNS if present against upstream ortholog, look for good hit, yea this later part is coming together nicely, the hard part is high throughput calling orthologs, extracting exact gene start information
 			
 First step is to parse DAGChainer output and create syntenic ortholog file??? Actually shouldn't that file be sufficient for the next step? Could think of a way to consolidate them all to one file
 
-Will they all be 1:1? I think this filters out tandem duplicates so they should be, but across other species they might be because of duplication / losses / differential retention yada yada yada
+Will they all be 1:1? I think this filters out tandem duplicates so they should be, but across other species they might be because of duplication / losses / differential retention yada yada yada. Will be easier to rewrite then start from scratch so lets start under some assumptions and just get writing
+
+2.) Extract orthologous gene pairs for which we have CNSs called
+	- Create list of AT Col-0 annotated gene IDs for which there is a CNS
+		- call it col_0_gene_cns.txt
+$ grep "AT[1-5]" CNS_Brassicaceae_65K_4Alan.txt | cut -d"_" -f2 | sort | uniq | cat > col_0_gene_cns.txt
+
+gives us a sorted list of all AT Col-0 gene IDs with a cns, the rest in the file were rna associated (~1500) or cryptic (72)
+
+$ wc -l col_0_gene_cns.txt
+11630 col_0_gene_cns.txt
+
+
+This file can be used to parse the DAGChainer output to extract syntenic ortholog pair coordinates, final output from this extraction should be fasta format >accession_gene_id\n5kb upstream
+
+Do I really want fasta format? To blast I want to make sure my subject matches what the query is supposed to be. I guess I could blast against the whole thing and parse the blast output for hits within the desired subject
+
+Yea blast complete set of CNSs against complete set of upstream regions, Then for each CNS, if sig hit in Col-0 subject, search for hit in desired accession subject. If hit present above certain bit score, add to count and probably print out to a file syntenic pair with hit output and what the CNS is, have second file for syntenic pair for which cns was present in col-0 but absent in accession, for first run just throw everything that didn't hit in every accession to this file.
+
+Lets roll through this process for Col-0 against Can-0.
+
+Syn-map Col-0 against Can-0: https://genomevolution.org/r/10h2r
+
+Print out only lines that have one of the AT col-0 genes as part of a pair. Nice done
+
+Next step use the cns_dagchainer file to create the fasta file containing upstream sequences. That will be a little more difficult. Could it be taken from the whole genome file from each accession?? seems to be the only way to do it, check out the whole genome file for how we want to get the sequences. There has to be a program that does it for you / faster right?
+
+Hmm, >Chr#
+Then X characters per line, could do something with that, multiply to get to numbers you need, could program it in perl but would seriously take forever I believe.. Ask if there is a quicker way
+
+	faidx
+	samtools faidx <ref.fasta> [region1 [...]]
+
+	Index reference sequence in the FASTA format or extract subsequence from indexed reference sequence. If no region is specified, 	faidx will index the file and create <ref.fasta>.fai on the disk. If regions are specified, the subsequences will be retrieved 		and printed to stdout in the FASTA format.
+
+	The input file can be compressed in the BGZF format.
+
+	The sequences in the input file should all have different names. If they do not, indexing will emit a warning about duplicate 		sequences and retrieval will only produce subsequences from the first sequence with the duplicated name.
+
+I'm going to do this....
+
+[yoccaala@dev-intel16-k80 full_genome_sequences]$ module load SAMTools/1.2
+[yoccaala@dev-intel16-k80 full_genome_sequences]$ samtools faidx can_0.v7.PR_inlowercase.fas
+#builds index file <fasta>.fai
+[yoccaala@dev-intel16-k80 full_genome_sequences]$ samtools faidx can_0.v7.PR_inlowercase.fas Chr1:1042772-1043550
+#outputs to stdout what you want... couldn't find a way to specify output file, would have to pipe
+
+Alrighty, now we need to write scripty script script. For each line in cns_dagchainer file, go to gene ID, check which accession it belongs to, open that accessions full genome sequence, extract 5kb upstream from start site if + strand, 5kb downstream end site if - strand. Do some manual inspection to see if +/- strand matters
+
+a16911_1	1||3760||5630||AT1G01010.1||1||CDS||306206330||1||99.84	3760	5630	b37385_1	1||3437||5287||CDS:AT1G01010-Can_0-mGene.NGS.1||1||CDS||1719340271||1||99.84	3437	5287	1.000000e-250	50
+a16911_1	1||6915||8666||AT1G01020.1||-1||CDS||306206333||2||99.34	8666	6915	b37385_1	1||6613||8359||CDS:AT1G01020-Can_0-mGene.NGS.1||-1||CDS||1719340272||4||99.34	8359	6613	2.200000e-209	100
+
+Examples of + / - strand:
+AT1G01010 +
+CNS:
+	>33231_AT1G01010
+	GAGTAAAATCTTTTCTTACAAGGGAAGTCCC
+5kb upstream in Col-0
+	
+	
+	
+AT1G01020 -
+
