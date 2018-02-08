@@ -148,14 +148,89 @@ Alrighty, now we need to write scripty script script. For each line in cns_dagch
 a16911_1	1||3760||5630||AT1G01010.1||1||CDS||306206330||1||99.84	3760	5630	b37385_1	1||3437||5287||CDS:AT1G01010-Can_0-mGene.NGS.1||1||CDS||1719340271||1||99.84	3437	5287	1.000000e-250	50
 a16911_1	1||6915||8666||AT1G01020.1||-1||CDS||306206333||2||99.34	8666	6915	b37385_1	1||6613||8359||CDS:AT1G01020-Can_0-mGene.NGS.1||-1||CDS||1719340272||4||99.34	8359	6613	2.200000e-209	100
 
+Continued on 02-08-18
+Download TAIR10 genome:
+[yoccaala@dev-intel14-k20 full_genome_sequences]$ curl -O https://www.arabidopsis.org/download_files/Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas
+Archive original chromosome designations here, change to Chr1, etc for ease later:
+1:>1 CHROMOSOME dumped from ADB: Feb/3/09 16:9; last updated: 2009-02-02
+385163:>2 CHROMOSOME dumped from ADB: Feb/3/09 16:10; last updated: 2009-02-02
+634510:>3 CHROMOSOME dumped from ADB: Feb/3/09 16:10; last updated: 2009-02-02
+931471:>4 CHROMOSOME dumped from ADB: Feb/3/09 16:10; last updated: 2009-02-02
+1166726:>5 CHROMOSOME dumped from ADB: Feb/3/09 16:10; last updated: 2009-02-02
+1508190:>mitochondria CHROMOSOME dumped from ADB: Feb/3/09 16:10; last updated: 2005-06-03
+1512836:>chloroplast CHROMOSOME dumped from ADB: Feb/3/09 16:10; last updated: 2005-06-03
+
 Examples of + / - strand:
-AT1G01010 +
+AT1G01010 + 3760||5630
 CNS:
 	>33231_AT1G01010
 	GAGTAAAATCTTTTCTTACAAGGGAAGTCCC
-5kb upstream in Col-0
+upstream in Col-0 should be 1-3760, just check the whole gene incase its intronic
+[yoccaala@dev-intel14-k20 full_genome_sequences]$ samtools faidx TAIR10_chr_all.fas Chr1:1-10000 | cat > temp.txt
+	Found it, nice, one slight problem here is that the less function did not find the full sequence as it was split across two lines, something to keep in mind
 	
 	
+AT1G01020 -	6915||8666
+CNS:
+	>4425_AT1G01020
+	TTAGGGTTTATAAGATTCTCTATTAAATTTCTTCAAAGTTTCCATCTT
+5kb upstream assuming + strand:
+Couldn't find immediately, check this way upstream( 8666-13666 )
+Not found the above way, check RevComp:
+	AAGATGGAAACTTTGAAGAAATTTAATAGAGAATCTTATAAACCCTAA
+Hmm... not finding anything
+even better, the TAIR10.gff seems different from the output of DAGChainer, well maybe it only lists where they are similar rather than where the genes are
+
+Try harder to find this CNS, give a broader range another go, then try the other CNS associated with this gene, then try another gene with >2 CNS, then if that fails blast it
+
+Found it, importantly in revcomp form and "downstream" the gene, so it is how it intuitively should be, really hope there is an easy blast option for reverse complementing
+
+Hmm, this one was ~ 8490-8520 which seems to be intronic. Maybe it would be best to extract whole gene sequence then classify as upstream, downstream, or intronic
+
+
+Alrighty, moving forward we got: minus strand considerations, pull entire sequence +/- 5kb either side and classify 
+
+
+Next: I think I am ready to start building pipeline from just these two accession comparisons for now starting from the DAGChainer file
+
+Take DAGChainer file and extract information, Delve into full genomes, now have fasta with synt ortholog stuff that should have CNSs, blast CNS file against those two fasta files and then damn going to be difficult to go from there, walk through it later today.
+
+O hey its later today. lets get crackin:
+First perl script should: Take DAGChainer file as input, read into full genomes, output two fasta files, one for each accession.
+I think that is a good first step, could have a second step in the bash script that builds databases from them / blasts CNSs against them and I think the last step would be parsing the blast output. Think about what info you would need from the blast output:
+- query CNS, if it hit significantly in Col-0 accession in the right place, then if it hit in other accession in the right place
+
+
+Uhhhhhh, dagchainer cns stuff only has col-0 stuff on the first 2 chromosomes... idk if thats even a syntenic ortholog list but o whale like I said fixing is easier than building
+	- DAGChainer pre-cns filtered file also seems the same way, hmmmmmm
 	
-AT1G01020 -
+I thought you could use SAMTools within a perl script, can't find out how, could always just write all the coordinates I want paired with things and make fasta creation a separate step
+
+Alrighty, run really quick with like 5 lines of DAGChainer cns output
+Yea it looks like the samtools thing is not working, actually write a short script to test that
+O shit little test worked! Think I need that pipe character I guess
+
+example errors:
+Could not load fai index of /mnt/home/yoccaala/04_Edger/athal_cns/full_genome_sequences/full                                                                                                    _genome_sequences/TAIR10_chr_all.fas
+[fai_load] build FASTA index.
+[fai_build] fail to open the FASTA file /mnt/home/yoccaala/04_Edger/athal_cns/full_genome_se                                                                                                    quences/full_genome_sequences/can_0.v7.PR_in_lowercase.fas
+[fai_load] fail to open FASTA index.
+Could not load fai index of /mnt/home/yoccaala/04_Edger/athal_cns/full_genome_sequences/full                                                                                                    _genome_sequences/can_0.v7.PR_in_lowercase.fas
+Argument "|" isn't numeric in subtraction (-) at ./ext_surr_regions.pl line 40, <$dag_fh> li                                                                                                    ne 10.
+Argument "|" isn't numeric in subtraction (-) at ./ext_surr_regions.pl line 42, <$dag_fh> li                                                                                                    ne 10.
+[fai_load] build FASTA index.
+[fai_build] fail to open the FASTA file /mnt/home/yoccaala/04_Edger/athal_cns/full_genome_se                                                                                                    quences/full_genome_sequences/TAIR10_chr_all.fas
+[fai_load] fail to open FASTA index.
+Could not load fai index of /mnt/home/yoccaala/04_Edger/athal_cns/full_genome_sequences/full                                                                                                    _genome_sequences/TAIR10_chr_all.fas
+[fai_load] build FASTA index.
+[fai_build] fail to open the FASTA file /mnt/home/yoccaala/04_Edger/athal_cns/full_genome_se                                                                                                    quences/full_genome_sequences/can_0.v7.PR_in_lowercase.fas
+[fai_load] fail to open FASTA index.
+Could not load fai index of /mnt/home/yoccaala/04_Edger/athal_cns/full_genome_sequences/full                                                                                                    _genome_sequences/can_0.v7.PR_in_lowercase.fas
+
+
+Need to:
+	- Change path specifications, right now have double full_genome_sequences thing going on
+	- write in to check the value of all variables to see if the split thing is still fucking up ecause it looks like it might be... That should be it as far as these messages show
+
+
 
