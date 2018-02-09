@@ -227,10 +227,28 @@ Could not load fai index of /mnt/home/yoccaala/04_Edger/athal_cns/full_genome_se
 [fai_load] fail to open FASTA index.
 Could not load fai index of /mnt/home/yoccaala/04_Edger/athal_cns/full_genome_sequences/full                                                                                                    _genome_sequences/can_0.v7.PR_in_lowercase.fas
 
-
+2-09-18
 Need to:
 	- Change path specifications, right now have double full_genome_sequences thing going on
 	- write in to check the value of all variables to see if the split thing is still fucking up ecause it looks like it might be... That should be it as far as these messages show
+	
+	
+Alrighty then.... Fixed most of it, last problem: if X kb exceeds chromosome length (+ or -)	
+We fixed the too low, but not the too high, forget about it for now. lets build a db, 
 
+Next:
+build db from these recently made fasta files, blast CNS file against these fasta files, have output in m8 format and check it out
 
+EXAMPLES
+[yoccaala@dev-intel14 blast_run]$ formatdb -i MotifsPlantPanCH2_Database.txt -p F -o T -n Motifs_db
+
+EXAMPLE FROM qsub_blastall_ZMB73_TIGR.sh:
+cd /mnt/home/yoccaala/01_VanBuren/mcscan/MCScanX/data
+module load BLAST
+blastall -p blastp -d "ZmB73_db Osativa_db_TIGR Bdistachyon_192_db Sbicolor_79_db" -i ZmB73_peptide.fa -e 1e-5 -b 5 -v 5 -m 8 -o ZmB73.blast3
+
+9846_AT4G28950: 15983_AT1G73240: 21642_AT3G45590: 23456_AT2G13790: 34095_AT4G28910: 46022_AT3G53460: 50208_AT4G29940:	59537_AT1G73550:	62875_AT3G09340
+
+All these CNSs are TA repeats, manually inspected them all
+I think I want to modify ext.pl script to include gene start / stop information so I can more easily classify it was up / down / intronic. Also this is where I should think about rev comp. I really should do the rev comp in the ext script right?? Shouldn't be too hard to take sequence and rev comp it then print to fasta. The problem is the CNSs need rev comped right???? Shit, well maybe not, could just revcomp them, should be able to find strand info for all the genes
 
