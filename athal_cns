@@ -252,3 +252,175 @@ blastall -p blastp -d "ZmB73_db Osativa_db_TIGR Bdistachyon_192_db Sbicolor_79_d
 All these CNSs are TA repeats, manually inspected them all
 I think I want to modify ext.pl script to include gene start / stop information so I can more easily classify it was up / down / intronic. Also this is where I should think about rev comp. I really should do the rev comp in the ext script right?? Shouldn't be too hard to take sequence and rev comp it then print to fasta. The problem is the CNSs need rev comped right???? Shit, well maybe not, could just revcomp them, should be able to find strand info for all the genes
 
+2-10-18
+
+Use command line to cut out info from GFF file, 
+
+$ grep "gene" TAIR10_GFF3_genes.gff | cut -f7,9 | awk -F ";" '{print $1}' | sed 's/ID=//' | cat > TAIR10_gene_strands.txt
+
+$ wc -l TAIR10_gene_strands.txt
+37513 TAIR10_gene_strands.txt
+
+hmmm, maybe some duplicates?? uniq showed no duplicates so... I guess thats fine, Ah, at the bottom of the file, there are a bunch of ATM annotations, that should be fine, will not affect the next step. 
+here is example of what will be used by perl script to revcomp the necessary CNSs:
++       AT1G01010
+-       AT1G01020
+-       AT1G01030
++       AT1G01040
++       AT1G01046
+
+Etc.
+
+02-12-18
+
+Woo hoo, looks like I got it to work:
+[yoccaala@dev-intel14 athal_cns]$ ./rev_comp_cns.pl -g gene_models/TAIR10_gene_strands.txt -c CNS_Brassicaceae_65K_4Alan.txt -o CNS_rev_comp.txt
+all minus strand genes found: 32370
+
+It says minus strand genes, but its really minus strand CNSs, see if it got all the CNSs[yoccaala@dev-intel14 athal_cns]$ wc -l CNS_rev_comp.txt
+126648 CNS_rev_comp.txt
+[yoccaala@dev-intel14 athal_cns]$ wc -l CNS_Brassicaceae_65K_4Alan.txt
+131069 CNS_Brassicaceae_65K_4Alan.txt
+
+hmmmm........... Looks like did not find the rna CNSs, don't really think I need them for this analysis so should probably just move on, but I think I fixed it in the script, lets check, seems like most missing are RNA CNSs, still ~ 100 missing, might be because Gene is not in the strand info file, try and run it with the change that should capture RNA CNSs
+
+nope didn't work
+Got it, for some reason there is an odd number of lines in the Brassicaceae CNS file, o whale, lets manually check a few CNSs to make sure they were rev comped.
+
+-	AT1G01420
+-	AT1G01430
+-	AT1G01440
+
+Something wrong with my rev comps, back to the drawing board, work on small script to get it to work. I hope its something wrong with the rev comp method and not the loop control
+
+Yea it was the reverse comp way, my new way is so complicated hahahahahahha, o well I am confident it works
+
+Manually checked a few, looks like I do have some reverse complimented CNSs, woo hooo, blast next CNS as query against both accessions as reference
+[yoccaala@dev-intel14 athal_cns]$ ./rev_comp_cns.pl -g gene_models/TAIR10_gene_strands.txt -c CNS_Brassicaceae_65K_4Alan.txt -o CNS_rev_comp.txt
+
+Running ext_surrounding_regions.pl should spit out fas_1 and fas_2 files, just keeping these file names for this rough run through, build db for both of these, hmm could blast against both and then parse output, now time to just stare at blast output to think of how to parse:
+What we want blast output to tell us:
+	- For each gene that has a CNS:
+		- Is there a significant hit in Col-0?
+		- Is the significant hit in the right place?
+		- If found in Col-0:
+			- Is there a sig hit in the same region
+			- Is that hit the same CNS?
+			- If found: count
+			- If not found: count for now, could pull out later if needed
+1
+Query
+The query sequence id
+2
+Subject
+The matching subject sequence id
+3
+% id
+4
+alignment length
+5
+mistmatches
+6
+gap openings
+7
+q.start
+8
+q.end
+9
+s.start
+10
+s.end
+11
+e-value
+12
+bit score
+
+Alrighty, read each line, get 
+CNS_name	Ext_region_name (ex AT1G01030.1_6864_16864:6864-16864)	id%	length	mismatch	gap openings	qstart (CNS)	qstop (CNS)	**s start (Gene region)	**s stop (Gene region)	e-value	bit score
+
+Awesome,... If bit score / e-value meets criteria:
+	- If CNS_name extracted gene name matches Ext_region_name ext gene name
+		- read gff strand info file to see if classify up or down stream, 
+		- extract coordinates, parse to check if up / down / internal based on strand info, add to count
+Get a little wonky for comparison:
+	- I think if search multiple things at a time, can check accession, look at accession ext gene name ex.
+		- rerun ext surrounding regions
+		
+To do:
+	- rerun ext surrounding regions on the whole genomes
+	- Check out accession gene names
+	- Think of regex to extract and compare
+	
+Looks like all accession gene names from Gan et al (2011) are in the format: CDS:AT1G01010-Can_0-mGene.NGS.1
+TAIR10 gene names format: AT1G01010.1
+	- looks like they all have a decimal designation, not all of the gene strand gff file gene names have it but some do
+
+Alrighty, looks like we can conditional if starts with CDS for it being in another accession... Need dynamic way to call accession though so think should just take everything after the hypen in gene name
+
+	- Loop through Col-0 blast and load in those CNSs with hit in the right place into a hash and set to True, or load into array
+	- Read each line in accession blast, if CNS exists in hash / array... hmmm, no should loop through each CNS..., no because if we hit the CNS we can switch that CNS to false / already hit and count those that did not hit, yessss
+	- Make 3 different hashes, one upstream, one downstream, one intronic. wherever blast hit, check different hash, add to count, conditional count for which accession.... could write counts out.. heres the thing I think I want to do single blast against all accessions, maybe it is better to do separate blast I guess, then this perl script would run separate times. Thats ok for now I guess
+	- Lets get writing! If we are going to do the separate blast thing, then we should create a separate one to do Col-0 blast parsing so much smaller file to load into hash
+
+Checking to see if strand info file has all genes represented without dots (do have them with decimals but I think all those with decimals have replicates without:
+sed 's/\..//' test_gene_strands.txt | cat > test_dotless.txt
+$ cut -f2 test_dotless.txt | sort | uniq | cat > test_uniq.txt
+$ grep -c "\." test_gene_strands.txt
+3911
+$ wc -l test_uniq.txt
+33602 test_uniq.txt
+$ wc -l TAIR10_gene_strands.txt
+37513 TAIR10_gene_strands.txt
+and 3911+33602 = 37513 so good, all those with decimals are replicated without decimals.. well they are replicated, I amd going to assume they are replicated without decimals.... I did another check I think we are good
+
+my $bs_count = 0;
+my $gene_match_count = 0;
+my $out_of_bounds = 0;
+my $downstream_hit = 0;
+my $intron_hit = 0;
+my $upstream_hit = 0;
+my $not_in_strand = 0;
+
+
+[yoccaala@dev-intel14 athal_cns]$ ./parse_col0_blast.pl -b first_run_blast.blast -g gene_models/TAIR10_gene_strands.txt -o test.txt
+Meets bit score criteria: 79
+CNS matches gene ID: 44
+Blast hit lies outside 5kb up/downstream of gene: 34
+CNS with a sig blast hit 5kb upstream: 3
+CNS with a sig blast hit inside the gene: 0
+CNS with a sig blast hit 5kb downstream: 6
+Gene not found in the gene strand file: 1
+
+Thats with bitscore > 40 so probably a bit high,,, lol maybe not the blast file was only on the first like 50 DAGChainer hits, so need to blast rev_comp_cns against full TAIR10 genome
+
+lowest bit score is 48.1 which corresponds to e-value of about 4e-6, about 45k hits... should be more but o whale, should think about lowering stringency. this will be a good test for the perl script though so go ahead
+
+Ahh, just blasted against whole genome, but need to blast against fas_col0_ext.txt
+
+[yoccaala@dev-intel14 athal_cns]$ formatdb -i fas_col0_ext.txt -p F -o T -n full_genome_sequences/database/Col0_db
+[yoccaala@dev-intel14 athal_cns]$ blastall -p blastn -d "full_genome_sequences/database/Col0_db" -i CNS_rev_comp.txt -e 1e-5 -b 5 -v 5 -m 8 -o TAIR10_cns_rev_comp.blast
+
+wc -l is ~35k, would like it to be much bigger, should have hits for all 65k CNSs
+
+[yoccaala@dev-intel14 athal_cns]$ wc -l TAIR10_cns_rev_comp.blast
+34462 TAIR10_cns_rev_comp.blast
+[yoccaala@dev-intel14 athal_cns]$ wc -l CNS_rev_comp.txt
+131070 CNS_rev_comp.txt
+[yoccaala@dev-intel14 athal_cns]$ ./parse_col0_blast.pl -b TAIR10_cns_rev_comp.blast -g gene_models/TAIR10_gene_strands.txt -o test.txt
+Meets bit score criteria: 34462
+CNS matches gene ID: 17821
+Blast hit lies outside 5kb up/downstream of gene: 16970
+CNS with a sig blast hit 5kb upstream: 6
+CNS with a sig blast hit inside the gene: 0
+CNS with a sig blast hit 5kb downstream: 12
+Gene not found in the gene strand file: 833
+
+Not very good, I don't believe this stuff, aha, important tidbit, I have it checking genome coordinates against subject start / stop, I'm blasting against a fasta file that goes from -5k to +5kb already, so 1-5000 is 5kb upstream for + strand genes as far as s_start and s_stop are concerned, so how to gauge max, need to do the difference of the written in coordinates -10k or something there is a way to do it. I am also concerned we are not hitting rev comped CNSs, manually check for a few
+
+Looks like the CNSs are hitting, they are hitting to genes they are not annotated for though for sure, ask about that, Ahah, looks like pretty good overlap when assigning to multiple genes, so some of the multiple hits are really just duplicates, why don't all my CNSs have a significant blast hit thats what I want to know..
+I think it is because the ext_surrounding sequences takes from the DAGChainer file and that may be incomplete, DAGChainer file has list of syntenic orthologs between Can-0 and Col-0....
+
+Should think about comparing DAGChainer output to gene_strand because gene_strand file should be comprehensive as it takes anything annotated as gene out of the GFF, maybe thats how I should ext surrounding sequences, but then miss some information I guess.. uhhhhgg
+
+Yea there are only about 5k lines in the DAGChainer output after filtering for lines that contain a gene with an annotated cns
+reran and looks like ~ 26k lines in the file now... ugh
