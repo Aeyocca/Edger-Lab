@@ -424,3 +424,35 @@ Should think about comparing DAGChainer output to gene_strand because gene_stran
 
 Yea there are only about 5k lines in the DAGChainer output after filtering for lines that contain a gene with an annotated cns
 reran and looks like ~ 26k lines in the file now... ugh
+I guess I just copy and pasted the file from html format so it didn't load fully, you know,,,, that would explain why almost everything was chromosome 1 or 2, hahahahaha, alrighty, use curl -O to get the file you need and restart, that will be good because now I can have the whole pipeline written here:
+
+Copy the link address under SynMap results called DAGChainer output in genomic coordinates (or something like that)
+[yoccaala@dev-intel14-k20 DAGChainer]$ curl -O https://genomevolution.org/coge/data/diags/16911/37385/16911_37385.CDS-CDS.last.tdd10.cs0.filtered.dag.all.go_D20_g10_A5.aligncoords.gcoords
+
+Rename to col0_can0_synmap.txt
+I think earlier I extracted only lines for which there was a gene that was associated with a CNS but I think this will be done in some of the later scripts, I think when parsing the blast output, so if blast step is taking too long, consider adding this step in bc I think CNSs found for ~11k genes, ignore for now
+Next ext_surrounding_regions.pl which takes DAGChainer in as well as CNS file and creates 2 fasta files, one for each genome with +/- 5kb of the gene
+[yoccaala@dev-intel14-k20 athal_cns]$ ./ext_surr_regions.pl -d DAGChainer/col0_can0_synmap.txt -a full_genome_sequences/TAIR10_chr_all.fas -b full_genome_sequences/can_0.v7.PR_in_lowercase.fas -f fasta_surr_reg/col0_ext.fa -o fasta_surr_reg/can0_ext.fa
+
+hmm having trouble with the lines indicating syntenic block number, should write in to skip those lines
+hmm... seems like it just put ">:0-5000" in where all the syntenic block information was, tempted to just grep to remove those lines... no I should fix ext_surr_regions.pl
+fixed it but geeez, took like 2-3 minutes to run on the cmd line
+We had the CNS file rev_comped, next step is to blast that against each fasta file, start with col-0
+
+[yoccaala@dev-intel14-k20 athal_cns]$ module load BLAST
+[yoccaala@dev-intel14-k20 athal_cns]$ formatdb -i fasta_surr_reg/col0_ext.fa -p F -o T -n "full_genome_sequences/database/col0_db"
+[formatdb] WARNING: Cannot add sequence number 25951 (lcl|ATMG00470.1:122475-132475) because it has zero-length.
+
+[formatdb] FATAL ERROR: Fatal error when adding sequence to BLAST database.
+[yoccaala@dev-intel14-k20 athal_cns]$ blastall -p blastn -d "full_genome_sequences/database/                                                        col0_db" -i CNS_rev_comp.txt -e 1e-5 -b 5 -v 5 -m 8 -o col0_cns_rev_comp.blast
+[blastall] FATAL ERROR: 5046_AT1G01500: Database full_genome_sequences/database/col0_db was                                                         not found or does not exist
+
+Damn, db did not build, investigate!
+ATMG sequences giving trouble, add to ext_surr script to also exclude lines matching ATMG
+
+
+
+
+
+
+
