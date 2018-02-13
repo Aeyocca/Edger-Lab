@@ -450,9 +450,179 @@ We had the CNS file rev_comped, next step is to blast that against each fasta fi
 Damn, db did not build, investigate!
 ATMG sequences giving trouble, add to ext_surr script to also exclude lines matching ATMG
 
+[yoccaala@dev-intel14-k20 athal_cns]$ formatdb -i fasta_surr_reg/can0_ext.fa -p F -o T -n "full_genome_sequences/database/can0_db"
+[yoccaala@dev-intel14-k20 athal_cns]$ qsub col0_can0_blast.sh
+52281019.mgr-04.i
+Resources requested: #PBS -l walltime=4:00:00,nodes=4:ppn=2,mem=15gb
+Submitted at ~9 am, keeping tabs so maybe I add the CNS filtering step earlier. Output file created at 9:14, finished sometime between 9:20 - 9:40 I believe so really not that bad
+
+[yoccaala@dev-intel14-k20 athal_cns]$ ./parse_col0_blast.pl -b blast/col0_cns_rev_comp.blast -g gene_models/TAIR10_gene_strands.txt -o blast/parsed_output/col0_parsed_blast.txt
+Meets bit score criteria: 118039
+CNS matches gene ID: 49596
+Blast hit lies outside 5kb up/downstream of gene: 46250
+CNS with a sig blast hit 5kb upstream: 11
+CNS with a sig blast hit inside the gene: 0
+CNS with a sig blast hit 5kb downstream: 12
+Gene not found in the gene strand file: 3323
+
+Investigate:
+5046_AT1G01500  out_of_bounds
+13292_AT1G01500 out_of_bounds
+
+Ahh, thats right, subject hits in blast output are based on fasta start / stop, dive into parse_blast perl script to fix
+Regardless, You would like to see many more than 46k CNS hits
+Looks like cns hits for 9449 uniq genes, wherease I think we have CNS info for ~ 11.5k genes
+
+[yoccaala@dev-intel14-k20 athal_cns]$ ./parse_col0_blast.pl -b blast/col0_cns_rev_comp.blast -g gene_models/TAIR10_gene_strands.txt -o blast/parsed_output/col0_parsed_blast.txt
+Meets bit score criteria: 118039
+CNS matches gene ID: 49596
+Blast hit lies outside 5kb up/downstream of gene: 0
+CNS with a sig blast hit 5kb upstream: 28753
+CNS with a sig blast hit inside the gene: 0
+CNS with a sig blast hit 5kb downstream: 17520
+Gene not found in the gene strand file: 3323
+
+Ahhh much better.
+
+Let that ride for now, write next one to use this parsed output which is tab delimited CNS	up/down/intron and walk through can0 blast output to check for presence absence....
+	- load parsed col0 output into hash
+	- for each blast line, extract info
+	- check if CNS exists in hash
+	- Put in separate hash and set to true for comparison later
+	- Same stuff for seeing upstream / downstream / intron / out_of_bounds, then can check if matches the hash
+	- last step is hash comparison, loop through both I guess, need to know how many / which CNSs are exclusive to each, just start with how many, if there are some that are exclusive to Can0, then can investigate
+	
+	Example Can-0 gene ID: CDS:AT1G01510-Can_0-mGene.NGS.1:180043-190043 
+.... I may be a victim to misannotation, if the AT gene ID isn-t right in the accession, I will not get a matching blast hit between CNS ID and gene ID
+
+For now lets have it also load in the strand info, should add that to the parse blast output later but for now screw it
+
+[yoccaala@dev-intel14-k20 athal_cns]$ ./parse_acc_blast.pl -b blast/can0_cns_rev_comp.blast -g blast/parsed_output/col0_parsed_blast.txt -s gene_models/TAIR10_gene_strands.txt -o test.txt
+Meets bit score criteria: 115381
+CNS matches gene ID: 48491
+Blast hit lies outside 5kb up/downstream of gene: 0
+CNS with a sig blast hit 5kb upstream: 28100
+CNS with a sig blast hit inside the gene: 0
+CNS with a sig blast hit 5kb downstream: 17162
+Gene not found in the gene strand file: 3229
 
 
+CNS hit in both Col_0 and accession: 0
+Also matches the region: 0
+Found only in Col_0: 35415
+exclusive to accession: 9319
+
+Good start, not finding similarities between Col-0 and Can-0, but parsing blast seems to be working, found the bug
+
+[yoccaala@dev-intel14-k20 athal_cns]$ ./parse_acc_blast.pl -b blast/can0_cns_rev_comp.blast -g blast/parsed_output/col0_parsed_blast.txt -s gene_models/TAIR10_gene_strands.txt -o test.txt
+Meets bit score criteria: 115381
+CNS matches gene ID: 48481
+Blast hit lies outside 5kb up/downstream of gene: 0
+CNS with a sig blast hit 5kb upstream: 28100
+CNS with a sig blast hit inside the gene: 0
+CNS with a sig blast hit 5kb downstream: 17162
+Gene not found in the gene strand file: 3219
 
 
+CNS hit in both Col_0 and accession: 9200
+Also matches the region: 9094
+Found only in Col_0: 249
+exclusive to accession: 119
+
+
+Interesting.... I am going to say we are not finding where all the CNSs are in the col-0 reference and therefore may also be missing them in accessions. what could be wrong???? What is the evalue of and exact like 10 bp match? It could be exact matches of shorter length are not good enough for our specified blast e-value of 1e-5, that could be it, investigate, 
+Wooo, it looks like out shortest query match is 24 bp, ahah, need to lower e-value
+
+Lets roll with e-value of 10 and see whats up
+[yoccaala@dev-intel14-k20 athal_cns]$ qsub col0_can0_blast_10.sh
+52286843.mgr-04.i
+
+Check back in 15 minutes, 11:42 not done, this will probably take a while.....
+
+Pipe:
+	- Blast
+	- Parse Col-0 Blast output
+	- Parse Accession Blast output
+
+[yoccaala@dev-intel14-k20 athal_cns]$ ./parse_col0_blast.pl -b blast/col0_cns_rev_comp_10.blast -g gene_models/TAIR10_gene_strands.txt -o blast/parsed_output/col0_parsed_blast_10.txt
+Meets bit score criteria: 149190
+CNS matches gene ID: 60355
+Blast hit lies outside 5kb up/downstream of gene: 0
+CNS with a sig blast hit 5kb upstream: 34843
+CNS with a sig blast hit inside the gene: 0
+CNS with a sig blast hit 5kb downstream: 21447
+Gene not found in the gene strand file: 4065
+
+Much Better!!!, including those not in gene strand file have all but a few hundred CNSs found! Look into that in a little
+
+[yoccaala@dev-intel14-k20 athal_cns]$ ./parse_acc_blast.pl -b blast/can0_cns_rev_comp_10.blast -s gene_models/TAIR10_gene_strands.txt -g blast/parsed_output/col0_parsed_blast_10.txt -o blast/parsed_output/can0_parsed_blast_10.txt
+Meets bit score criteria: 146777
+CNS matches gene ID: 59348
+Blast hit lies outside 5kb up/downstream of gene: 0
+CNS with a sig blast hit 5kb upstream: 34209
+CNS with a sig blast hit inside the gene: 0
+CNS with a sig blast hit 5kb downstream: 21190
+Gene not found in the gene strand file: 3949
+
+
+CNS hit in both Col_0 and accession: 9796
+Also matches the region: 9698
+Found only in Col_0: 236
+exclusive to accession: 127
+
+How to write comparison file between accession and reference? header >unique to Col-0 / >unique to Can-0
+Ugh... double gene IDs, are they the same things??????
+AT5G54890AT5G54900-Can_0-mGene.NGS.1
+:( the first part of this sequence matches to a col-0 ID that is off the wall, at least the second part mathes a col-0 ID that is the same (in the DAGChainer output)
+Some more investigating:
+AT5G38890AT5G38895
+	has only one hit to AT5G38895
+AT1G73600AT1G73602
+	has only one hit to AT1G73600
+AT3G06985AT3G06990
+	has only one hit to AT3G07000.1 :(
+AT1G79450AT1G79460
+AT4G21580AT4G21585
+AT1G80745AT1G80750
+
+Alrighty, I need to equate Col-0 and accession gene IDs, 
+	- Check if any represented twice, if so need to write to take best hit
+	- write out to file Col-0\tAccession
+	- Think a little more on this, neeed dynamic
+	
+	When do I need this translation?
+		- when parsing blast outputs, to see if CNS are present / absent, thats it right? Yea should be it since ext surrounding regions gives more than we bargained for, alrighty, this is possible, 
+		Biggest problem ==== Blast hit to multiple different Accession genes, don't know which is which, so in that script, then we need to read blast output, and I think can just translate blast gene ID to Col-0 ID, then the rest of it should work, yea, then should I just make a translate blast output file? Can write simple unix for the substitution right? Will need perl for translation file but otherwise.
+		Ok, perl to create translation file, unix to substitute gene names in blast output, then parse script should work, right????
+		:( This also means the strand file is probably not valid for the accession gene directions, we could check DAGChainer output and see if any strand hits are opposite
+		
+		To do:
+			- Check DAGChainer for multiple hits
+			- Check DAGChainer for hits on opposite strands
+			- write substitution perl script based on DAGChainer output
+			- write unix line to loop through substitution file and replace accession gene names with col-0 gene names
+			- Then all the comparisons should be good
+			
+			9,25
+	Yup, all my upstream / downstream assignments for accession is trash, shoot how to rev comp what MAKES NO SENSE!
+:( According to DAGChainer output, 13k / 26k have pattern 1, -1, alrighty, if syntenic block labeled r, then seems genes on opposite strands 230 / 539 syntenic blocks are r, which makes like absolutely no sense, unless they are all just super tiny, that doesn't mean they are different in the genome fastas then because I am still getting the rev_comped CNSs to hit just fine
+
+
+AT1G78160, according to DAGChainer, + strand accession, - strand Col-0, a quick check reveals + strand Col-0, WHAT DOES THIS MEAN THEN, all this strand info is garbage, I need to go with the TAIR10_GFF and guess I just need to trust  that? Could combine TAIR10 and accession GFF, do the substitution translation, then check for concordance:
+	- make substitution file
+		- series of cuts and what nots: [yoccaala@dev-intel14-k20 DAGChainer]$ cut -f7,23 -d"|" temp.txt | sed 's/|/    /' | cat > col0_can0_gene_sub.txt
+	- combine accession and Col-0 GFF files to look at strand concordance (This is all to recover false negatives in CNS presence / absence)
+
+not match #, match "gene", cut 7,9, take out ID=
+
+Match strand: 17715
+Not match strand: 1065
+$can{$trans{$key}} not found : 1720
+$trans{$key} not found : 17013
+
+
+This is a mess..... Well... not finding trans key isn't bad, that just means no syntenic ortholog found, also why so little syntenic orthologs found????? o whale
+
+I need to step back and list my current problems tonight, and what I can do about those moving forward
 
 
