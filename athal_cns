@@ -625,4 +625,42 @@ This is a mess..... Well... not finding trans key isn't bad, that just means no 
 
 I need to step back and list my current problems tonight, and what I can do about those moving forward
 
+02-14-18
 
+Did a little thinking... I don't think I will care if i get a blast hit in the right location or not, I think I will just roll with getting a hit, because Really I am only pulling +/- 5kb from all syntenic ortholog hits so even if blast hit is not with the correct gene, its still present.
+Additionally, I believe blastn by default also searched the reverse complement of the query sequence, that is what I have found. Testing this:
+[yoccaala@dev-intel14-k20 athal_cns]$ qsub blast_full_set.sh
+52316070.mgr-04.i
+CNS_Brassicaceae_65K_4Alan.txt
+CNS_Brassicaceae_65k_4Alan.txt
+52316104.mgr-04.i
+
+So everything is dandy except I am unable to classify blast hits as upstream, downstream, or intron, and I need to fix my parse_blast script to not care about hitting in the right gene
+
+Alrighty, if we loop through every GFF file for each accession, should not be too hard to create strand info file for each accession. The biggest problem is going to be matching gene names from gff files to gene names in blast output because those gene names come from DAGChainer output which comes from gff but still not the same
+
+
+	- Take a closer look at Gene not in strand info file
+	- Functional enrichment of genes that lose CNSs
+	- File for which CNSs have no hits in accession
+	- Keep e-value at 10, complete loss will be more interesting
+	- PAV will probably be more common since these were identified by looking at super conserved across family
+	- Pairwise comparisons between Col-0 and accession, filter down 65k CNSs before comp to accession
+	- Just do presence absence for this run through, upstream / downstream won't really matter
+	- Someway to keep track of pairwise % total CNS in Col-0, % in accession / file that lists which were not found
+	- Think about getting blast hit sequences for subject and query with the idea of finding mutational loads
+	- Manually remove TATATATATATATA CNS sequences
+	
+	- Strawberry stuff:
+		- Blastn fasta of genes / proteins against the world, tabular output, extract assignments / counts per chromosome
+
+[yoccaala@dev-intel14-k20 blast]$ wc -l col0_cns_rev_comp.blast
+118039 col0_cns_rev_comp.blast
+[yoccaala@dev-intel14-k20 blast]$ wc -l full_set.blast
+118039 full_set.blast
+
+This tells me blastn will automatically search the reverse complement of the sequence. If for some reason you do not want to search the rev comp I think you can add the -S flag.
+
+What I am doing here is not groundbreaking work, I doubt it is very useful to anyone beside me, I would like to leave it here for anyone that might have questions about my projects / if they pick up anywhere I leave off. 
+However, have decided to take down. Will upload when everything is finished
+	
