@@ -1,0 +1,26 @@
+######Paper notes December 2018
+#general thoughts to help with comps
+
+Title: Drought adaptation in Arabidopsis thaliana by extensive genetic loss-of-function
+Authors: J.G. Monroe1,2*, T. Powell1,3, N. Price1, J.L. Mullen1, A. Howard1, K. Evans1 3 , J.T. Lovell4, J.K. McKay1,2
+2018 eLife
+
+Overview:
+- took 1001 data, looked for loss of function alleles, used satellite data on seasonal drought conditions, found association between flowering time and drought timing / frequency. 
+- Early drought, late flower
+- late drought, early flower
+- found loss of function alleles associated with these phenotypes with some functional knockouts too that affect FT.
+- many more early flowering gene associations than late flowering (likely because Col-0 is early flowering)
+- Found genes associated with drought timing and or flowering time
+  - found 247 in this category out of 2088 tested genes with LoFunction allele in at least 5% of ecotypes tested
+- seemingly generated gene models based on SNP data for ecotype alleles and used that for ka/ks calculation?
+  - not sure, ka/ks a little vague whether they just tested candidate genes in Col-0 or across ecotypes
+- permutation tests were a single permutation, but outcome was severly far from data I think it is fine
+
+
+
+
+
+
+
+
