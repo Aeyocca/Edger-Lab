@@ -38,7 +38,8 @@ Authors: Stefano Berto and Katja Nowick
 
 check out this guy for insight on hypothesis: "Our finding agrees with the hypothesis that many new network links can arise non-adaptively and can be added to or deleted from the network without changing its function"
 Sorrells TR, Johnson AD. 2015. Making sense of transcription networks. Cell 161(4):714–723.
-
+- binding sites arise quickly and non-adaptively
+  - I beg to differ sir, my sites are adaptive on account of greater ATAC overlap than expected by chance
 
 
 
