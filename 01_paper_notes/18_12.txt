@@ -17,6 +17,23 @@ Overview:
   - not sure, ka/ks a little vague whether they just tested candidate genes in Col-0 or across ecotypes
 - permutation tests were a single permutation, but outcome was severly far from data I think it is fine
 
+Title: Species-Specific Changes in a Primate Transcription Factor Network Provide Insights into the Molecular Evolution of the Primate Prefrontal Cortex
+Authors: Stefano Berto and Katja Nowick
+
+- Network differences between Primate and Human using Rhesus as outgroup
+- used wTO instead of WGCNA, this allows differences in edges to be found, not just nodes
+- interesting, number of species specific expression patterns even when normalized for evo distance from MRCA of the three
+- Manually curated list of "Brain-TFs", brain specific expression overrep in human specific TF expression patters but not the other two species
+  - but... that list was made by looking at humans, so the list of Brain-TFs might be overrep with lineage specific genes for Human
+  - Counteracting this a little, did not find increases in connectivity in tissues OTHER than brain
+- "but wTO values correlate between the net- works (Pearson correlation, r^2 = 0.13, P < 2.2 􏰅 10􏰂16)."
+  - I guess r-squared of 0.13 is good for network value correlation
+  - hmm not sure what this value measures, I guess network similarity? Well its closer than expected by chance
+  - this comparison not even super important: its all TF net vs lineage specific net
+- What is biological significance of higher connectivity in network? what does this mean?
+  - I think it means we just found way more genes like this in humans
+  - and in human lineage, greater pleiotropy
+  - the power would be which of these interactions responsible for human specific traits?
 
 
 
