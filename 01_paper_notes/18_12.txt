@@ -34,7 +34,10 @@ Authors: Stefano Berto and Katja Nowick
   - I think it means we just found way more genes like this in humans
   - and in human lineage, greater pleiotropy
   - the power would be which of these interactions responsible for human specific traits?
+- Changes in genes these networks regulate changes less, it seems, following hypothesis that network changes can be non adaptive and change without changing functions
 
+check out this guy for insight on hypothesis: "Our finding agrees with the hypothesis that many new network links can arise non-adaptively and can be added to or deleted from the network without changing its function"
+Sorrells TR, Johnson AD. 2015. Making sense of transcription networks. Cell 161(4):714–723.
 
 
 
