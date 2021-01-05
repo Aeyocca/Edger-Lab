@@ -1,0 +1,267 @@
+---
+title: "Fragaria_pangenome_modeling"
+output: html_document
+---
+
+#11-17-20
+Pangene_subsets adding a sixth genome
+```{r}
+#hmmm line graph with error bars
+#thinking two column data frame, separate data frames for core and dispensable
+library(tidyverse)
+library(ggplot2)
+
+#a = 28588
+#b = 24491
+#c = 25411
+#d = 28131
+#e = 23665
+#f = 24779
+gene_counts = c(28588,24491,25411,28131,23665,24779)
+spec_combs = list(c(1),c(2),c(3),c(4),c(5),c(6),
+                  
+                  c(1,2),c(1,3),c(1,4),c(1,5),c(1,6),
+                  
+                  c(1,2,3),c(1,2,4),c(1,2,5),c(1,2,6),
+                  c(1,3,4),c(1,3,5),c(1,3,6),c(1,4,5),c(1,4,6),c(1,5,6),
+                  
+                  c(1,2,3,4),c(1,2,3,5),c(1,2,3,6),c(1,2,4,5),
+                  c(1,3,4,5),c(1,3,4,6),c(1,4,5,6),
+                  
+                  c(1,2,3,4,5),c(1,2,3,4,6),c(1,2,3,5,6),c(1,2,4,5,6),c(1,3,4,5,6),
+                  
+                  c(1:6))
+total_gene_counts = c()
+for (combo in spec_combs) {
+  total_gene_counts = c(total_gene_counts,mean(gene_counts[combo]))
+}
+#total gene count = average of non-reference gene count
+#actually... can make this a function
+#hmm need to write which subsets though
+
+#values were obtained with syntenic approach, all possible comparisons of n genomes
+#that must include F. vesca in the comparison
+#Therefore cannot identify dispensable genes that are shared in non-ref species,
+#but absent in F. vesca, therefore dispensable gene counts are just complements of 
+#species gene counts
+
+pangene_df = data.frame(Total_Gene_Count = total_gene_counts,
+                     
+                      Core_Count = c(28588,24491,25411,28131,23665,24779,
+                                     
+                                     16511,16612,17766,16793,17013,
+                                     
+                                     14707,15370,15189,15142,14860,
+                                     14748,14832,15647,15267,15343,
+                                     
+                                     13877,13865,13941,14406,13875,13941,14549,
+                                     
+                                     13220,13222,13255,13669,13286,
+                                     
+                                     12706),
+                      Species_Number = c(rep(1,6),
+                                         rep(2,5),
+                                         rep(3,10),
+                                         rep(4,7),
+                                         rep(5,5),
+                                         rep(6,1)))
+
+pangene_df = pangene_df %>% 
+  mutate(Dispensable_Count = Total_Gene_Count - Core_Count) %>% 
+  mutate(Core_per = Core_Count / Total_Gene_Count) %>% 
+  mutate(Dispensable_per = Dispensable_Count / Total_Gene_Count)
+
+#combine to get:
+#one line for each species number
+#mean, stddev for core / dispensable
+pangene_plot_df = pangene_df %>% 
+ group_by(Species_Number) %>% 
+ summarize(Core_Mean=mean(Core_Count),
+ Core_Stdev=sd(Core_Count),
+ Dispensable_Mean = mean (Dispensable_Count),
+ Dispensable_Stdev = sd(Dispensable_Count))
+
+pangene_plot_df[is.na(pangene_plot_df)] <- 0
+
+#Stack core and dispensable counts into a single column with tag column for core/disp
+pangene_tag_membership_df = pangene_df %>% 
+  gather(key = "Membership", value = "Genes", Core_Count, Dispensable_Count)
+#manually add mean values so they have a separate color/shape
+pangene_means = data.frame(Total_Gene_Count = rep(0,6),
+                           Species_Number = c(1:6,1:6),
+                           Core_per = rep(0,12),
+                           Dispensable_per = rep(0,12),
+                           Membership = c(rep("Core_Mean",6), rep("Dispensable_Mean", 6)),
+                           Genes = c(pangene_plot_df$Core_Mean,
+                                     pangene_plot_df$Dispensable_Mean))
+pangene_tag_membership_df = rbind(pangene_tag_membership_df, pangene_means)
+
+#only problem is adding the trendline now...
+
+membership_plot = pangene_tag_membership_df %>% 
+  ggplot(aes(x = Species_Number, y = Genes, color = Membership)) +
+  geom_point(aes(shape=Membership, color=Membership)) +
+  theme_minimal() +
+  ggtitle("Pangenome relative to the reference genotype")
+membership_plot
+
+# #
+# pdf(file = "core_subsampling_11_18_20.pdf", width = 8.5, height = 11)
+#   plot(core_plot)
+#   dev.off()
+# #
+# dispensable_plot = pangene_plot_df %>% 
+#   ggplot(aes(x = Species_Number, y = Dispensable_Mean)) +
+#   geom_line() +
+#   xlim(1,6) +
+#   ylim(0,15000) +
+#   geom_point() +
+#   geom_errorbar(aes(ymin = Dispensable_Mean-Dispensable_Stdev,
+#                     ymax=Dispensable_Mean+Dispensable_Stdev),
+#                 position=position_dodge(0.05),
+#                 width = 0.1) +
+#   theme_minimal() +
+#   ggtitle(label = "Dispensable genome average across multiple comparisons")
+# dispensable_plot
+# #
+# pdf(file = "disp_subsampling_11_18_20.pdf", width = 8.5, height = 11)
+#   plot(dispensable_plot)
+#   dev.off()
+# 
+# #
+# 
+# #grid on same plot
+# library(grid)
+# grid.newpage()
+# grid.draw(rbind(ggplotGrob(core_plot), ggplotGrob(dispensable_plot), size = "last"))
+# 
+# pdf(file = "cor_disp_subsampling.pdf", width = 8.5, height = 11)
+#   grid.draw(rbind(ggplotGrob(core_plot), ggplotGrob(dispensable_plot), size = "last"))
+#   dev.off()
+
+```
+
+
+
+Pub quality figure for core genome sampling
+REQUIRES pangene_df from #11-17-20
+Pangene_subsets adding a sixth genome
+```{r}
+#idea is geom_point, different point types if core or dispensable gene counts..
+
+#need to edit pangene_df a little
+pangene_point_df
+
+#Stack core and dispensable counts into a single column with tag column for core/disp
+pangene_tag_membership_df = pangene_df %>% 
+  gather(key = "Membership", value = "Genes", Core_Count, Dispensable_Count)
+#manually add mean values so they have a separate color/shape
+pangene_means = data.frame(Total_Gene_Count = rep(0,6),
+                           Species_Number = c(1:6,1:6),
+                           Core_per = rep(0,12),
+                           Dispensable_per = rep(0,12),
+                           Membership = c(rep("Core_Mean",6), rep("Dispensable_Mean", 6)),
+                           Genes = c(pangene_plot_df$Core_Mean,
+                                     pangene_plot_df$Dispensable_Mean))
+pangene_tag_membership_df = rbind(pangene_tag_membership_df, pangene_means)
+
+#only problem is adding the trendline now...
+membership_plot = pangene_tag_membership_df[] %>% 
+  ggplot(aes(x = Species_Number, y = Genes, color = Membership)) +
+  geom_point(aes(shape=Membership, color=Membership)) +
+  theme_minimal() +
+  ggtitle("Pangenome relative to the reference genotype") +
+  #geom_smooth(aes(group = Membership), formula = 'y~x', se = FALSE) +
+  stat_function(fun=function(x){37714.175*2.71828^(x*-1.099) + 13193.604})  
+  
+  # stat_smooth(data = pangene_tag_membership_df[which(pangene_tag_membership_df$Membership == "Dispensable_Mean"),],
+  #             method = "nls",
+  #             formula = y ~ a*x^b,
+  #             method.args = list(start = list(a = 13000, b = 1)),
+  #             se = FALSE)
+membership_plot
+
+#obtaining the parameters of curves:
+#Thank you stack overflow:
+#https://stats.stackexchange.com/questions/160552/why-is-nls-giving-me-singular-gradient-matrix-at-initial-parameter-estimates
+#Plotting
+#https://stackoverflow.com/questions/5177846/plot-a-function-with-ggplot-equivalent-of-curve
+
+#I know from B oleracea pangenome paper, these two models were used to fit
+#the core/pangenome estimates respectively:
+#y=A(e^(Bx))+C and y=A(x^B)+C
+#But how to estimate the parameters A, B, and C???? (e is mathematical constant)
+#Stack overflow tells me to pick a reasonable estimate of C as 0.5 * min(Y) (Genes in our case)
+#Them take the natural log of both sides and fit a linear model
+#Then use those parameters of slope and intercept of linear model to fit nonlinear model
+#to obtain final estimates of A, B, and C
+#Then we can plot with ggplot
+
+#Use Core_Means to fit linear model
+core_mean_estimates = pangene_tag_membership_df[which(pangene_tag_membership_df$Membership == "Core_Mean"),]
+c = 0.5 * min(core_mean_estimates$Genes)
+linear_model = lm(log(Genes - c) ~ Species_Number, data = core_mean_estimates)
+start = list(a=exp(coef(linear_model)[1]), b=coef(linear_model)[2], c=c)
+core_model_fit = nls(Genes ~ a * exp(b * Species_Number) + c, 
+                     data = core_mean_estimates, start = start)
+#sanity check to see if curve fits well
+plot(core_mean_estimates[,c(2,6)])
+p = coef(core_model_fit)
+curve(p["a"] * exp(p["b"] * x) + p["c"], lwd=2, col="Red", add=TRUE)
+#Nice! use these values in stat_fun
+
+#Use Dispensable_Mean, ok for this one I just messed around with reasonable estimates for
+#a / b based on transforming base model y = a * x^b to about fit what we observe
+disp_mean_estimates = pangene_tag_membership_df[which(pangene_tag_membership_df$Membership == "Dispensable_Mean"),]
+disp_nl_model = nls(Genes ~ a * Species_Number^b, data = disp_mean_estimates,
+                    start = list(a = 13000, b = 0.01))
+#check how it does
+plot(disp_mean_estimates[,c(2,6)])
+p = coef(disp_nl_model)
+curve(10035.2798 * (x - 1)^0.1685, lwd=2, col="Red", add=TRUE)
+#not very good, try getting value of c
+disp_nl_model = nls(Genes ~ a * (Species_Number + c)^b, data = disp_mean_estimates,
+                    start = list(a = 10000, b = 0.15, c = -1))
+#Yupp.. think this situation is explicitly different than modeling pangenome size
+#requires horizontal transformation (c = -1) and slightly different model
+#to be honest, I don't know what this all means but I got the curve to look nice
+plot(disp_mean_estimates[,c(2,6)])
+p = coef(disp_nl_model)
+curve(p["a"] * (x + p["c"])^p["b"], lwd=2, col="Red", add=TRUE)
+
+disp_p = coef(disp_nl_model)
+core_p = coef(core_model_fit)
+
+#plotsies!!
+membership_plot = pangene_tag_membership_df %>% 
+  ggplot(aes(x = Species_Number, y = Genes, color = Membership)) +
+  geom_point(aes(shape=Membership, color=Membership)) +
+  scale_color_manual(breaks = c("Core_Count", "Dispensable_Count"),
+                     labels = c("Core", "Dispensable"),
+                     values = c("dodgerblue3","red","lightblue3","red")) +
+  scale_shape_manual(breaks = c("Core_Count", "Dispensable_Count"),
+                     labels = c("Core", "Dispensable"),
+                     values = c(15, 15, 17, 17)) + 
+  theme_minimal() +
+  ggtitle("Pangenome relative to the reference genotype") +
+  stat_function(fun=function(x){core_p["a"]*2.71828^(x*core_p["b"]) + core_p["c"]}, color="black") +
+  stat_function(fun=function(x){disp_p["a"]*(x + disp_p["c"])^disp_p["b"]}, color="black") +
+  xlab("Number of genomes") +
+  ylab("Number of genes") +
+  theme(legend.position = c(0.8,0.8),
+        legend.title = element_blank())
+  
+membership_plot
+
+height = 4
+width = 5
+wkdir=""
+pdf(file = "/wkdir/pangenome_subsampling_21_01_04.pdf", height = height, width = width)
+  membership_plot
+  dev.off()
+png(file = "/wkdir/pangenome_subsampling_21_01_04.png", height = height, width = width, res = 300, units = "in")
+  membership_plot
+  dev.off()
+
+```
+
